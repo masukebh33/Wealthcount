@@ -3,49 +3,73 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Ramani ya Kifedha</title>
+<title>Ramani ya Kifedha — Mr. Buhalata</title>
 <meta name="theme-color" content="#0A2472">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{--navy:#0A2472;--navy-soft:#17348f;--good:#10B981;--bad:#EF4444;--warn:#F59E0B;--bg:#F8FAFC;--bg-elevated:#FFF;--bg-sunken:#EEF1F6;--border:#E1E7F0;--text:#101828;--text-muted:#5B6579;--text-faint:#6B7280;--shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05);--radius:14px}
   body.dark{--navy:#1E3A8A;--navy-soft:#3B5BDB;--bg:#111827;--bg-elevated:#182234;--bg-sunken:#0D1420;--border:#2A3547;--text:#EDF1F7;--text-muted:#9BA6BC;--text-faint:#8B95A8;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35)}
   *{box-sizing:border-box}
-  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;padding-bottom:60px;font-variant-numeric:tabular-nums}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
   .card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-  .btn{border:none;background:var(--navy);color:#fff;padding:10px 18px;border-radius:9px;font-family:inherit;font-weight:600;font-size:.84rem;cursor:pointer;transition:background .2s}
+  .btn{border:none;background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;font-family:inherit;font-weight:600;font-size:.9rem;cursor:pointer;transition:background .2s,transform .1s}
   .btn:hover{background:var(--navy-soft)}
-  .btn.full{width:100%;margin-top:4px}
+  .btn:active{transform:scale(.98)}
+  .btn.full{width:100%}
   .btn.ghost{background:transparent;color:var(--bad);border:1px solid var(--border)}
-  .field{margin-bottom:10px}
-  .field label{display:block;font-size:.76rem;font-weight:600;color:var(--text-muted);margin-bottom:5px}
-  .field input,.field select{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--bg-sunken);color:var(--text);font-family:inherit;font-size:.86rem}
-  .field input:focus,.field select:focus{outline:2px solid var(--navy-soft);outline-offset:1px}
-  #authScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#0A2472,#17348f);display:flex;align-items:center;justify-content:center;padding:24px}
+  .btn.green{background:var(--good)}
+  .btn.green:hover{background:#059669}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:6px}
+  .field input,.field select{width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-sunken);color:var(--text);font-family:inherit;font-size:.9rem;transition:border-color .2s}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--navy-soft);background:var(--bg-elevated)}
+
+  /* ===== AUTH SCREEN ===== */
+  #authScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#0A2472 0%,#17348f 100%);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
   #authScreen.hidden{display:none}
-  .auth-box{background:#fff;border-radius:20px;padding:32px 26px;max-width:400px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.4);text-align:center}
+  .auth-box{background:#fff;border-radius:22px;padding:34px 28px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.5);text-align:center;position:relative}
   body.dark .auth-box{background:#182234;color:#EDF1F7}
-  .auth-logo{width:70px;height:70px;margin:0 auto 16px;background:linear-gradient(135deg,#0A2472,#17348f);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:34px;color:#fff}
-  .auth-box h2{margin:0 0 4px;font-size:1.25rem;color:#101828}
+  .auth-logo{width:76px;height:76px;margin:0 auto 18px;background:linear-gradient(135deg,#0A2472,#17348f);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:38px;color:#fff;box-shadow:0 8px 24px rgba(10,36,114,.4)}
+  .auth-box h2{margin:0 0 4px;font-size:1.4rem;color:#101828;font-weight:800}
   body.dark .auth-box h2{color:#EDF1F7}
-  .auth-box p.sub{margin:0 0 18px;font-size:.86rem;color:#5B6579}
+  .auth-box p.sub{margin:0 0 22px;font-size:.88rem;color:#5B6579}
   body.dark .auth-box p.sub{color:#9BA6BC}
-  .auth-input{width:100%;padding:11px 13px;font-size:.9rem;font-family:inherit;border:2px solid #E1E7F0;border-radius:10px;background:#F8FAFC;color:#101828;margin-bottom:9px}
+  .auth-input{width:100%;padding:12px 14px;font-size:.92rem;font-family:inherit;border:1.5px solid #E1E7F0;border-radius:11px;background:#F8FAFC;color:#101828;margin-bottom:10px;transition:border-color .2s}
   body.dark .auth-input{background:#0D1420;border-color:#2A3547;color:#EDF1F7}
   .auth-input:focus{outline:none;border-color:#3B5BDB;background:#fff}
-  .auth-error{color:#EF4444;font-size:.8rem;min-height:18px;margin:4px 0;font-weight:600}
-  .auth-toggle-link{margin-top:12px;font-size:.82rem}
+  .auth-error{color:#EF4444;font-size:.82rem;min-height:18px;margin:6px 0;font-weight:600}
+  .auth-toggle-link{margin-top:16px;font-size:.86rem}
   .auth-toggle-link a{color:#0A2472;font-weight:600;text-decoration:none}
   body.dark .auth-toggle-link a{color:#7FA0F5}
+  .auth-brand{margin-top:22px;padding-top:18px;border-top:1px solid #E1E7F0;font-size:.74rem;color:#8B95A8;line-height:1.6}
+  body.dark .auth-brand{border-top-color:#2A3547}
+  .auth-brand b{color:#0A2472;font-weight:700}
+  body.dark .auth-brand b{color:#7FA0F5}
+
+  /* Biometric setup screen */
+  .bio-icon{width:100px;height:100px;margin:0 auto 22px;background:linear-gradient(135deg,#10B981,#059669);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:52px;color:#fff;animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}50%{box-shadow:0 0 0 22px rgba(16,185,129,0)}}
+  .bio-icon.error{background:linear-gradient(135deg,#EF4444,#DC2626);animation:none}
+  .bio-icon.success{background:linear-gradient(135deg,#10B981,#059669);animation:none}
+
+  /* PIN input */
+  .pin-input{width:100%;padding:16px;font-size:1.4rem;font-family:inherit;letter-spacing:8px;text-align:center;border:2px solid #E1E7F0;border-radius:12px;background:#F8FAFC;color:#101828;margin-bottom:12px;font-weight:700}
+  body.dark .pin-input{background:#0D1420;border-color:#2A3547;color:#EDF1F7}
+  .pin-input:focus{outline:none;border-color:#3B5BDB}
+
+  /* ===== APP ===== */
+  #appRoot{display:none}
   header.topbar{position:sticky;top:0;z-index:50;background:var(--navy);color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .brand .mark{font-weight:700;font-size:1.05rem}
+  .brand .mark{font-weight:800;font-size:1.05rem;letter-spacing:-.02em}
   nav.tabs{display:flex;gap:4px;background:rgba(255,255,255,.08);padding:4px;border-radius:999px}
   nav.tabs button{border:none;background:transparent;color:rgba(255,255,255,.75);padding:7px 12px;border-radius:999px;font-family:inherit;font-weight:600;font-size:.78rem;cursor:pointer}
   nav.tabs button.active{background:#fff;color:var(--navy)}
   .header-actions{display:flex;gap:6px}
-  .icon-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center}
+  .icon-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;transition:background .2s}
+  .icon-btn:hover{background:rgba(255,255,255,.22)}
   main{max-width:1180px;margin:0 auto;padding:20px 16px 0}
   .page{display:none}.page.active{display:block}
   h1.page-title{font-size:1.3rem;font-weight:700;margin:4px 0}
@@ -81,41 +105,47 @@
   .tag.debt{background:rgba(245,158,11,.15);color:var(--warn)}
   .del-btn{border:none;background:transparent;color:var(--text-faint);cursor:pointer;padding:4px 8px}
   .del-btn:hover{color:var(--bad)}
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--text);color:var(--bg-elevated);padding:10px 16px;border-radius:10px;font-size:.82rem;font-weight:600;z-index:200;transition:transform .35s;pointer-events:none;max-width:90vw}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--text);color:var(--bg-elevated);padding:10px 16px;border-radius:10px;font-size:.82rem;font-weight:600;z-index:9999;transition:transform .35s;pointer-events:none;max-width:90vw}
   .toast.show{transform:translateX(-50%) translateY(0)}
-  .wm-badge{position:fixed;bottom:12px;right:12px;background:linear-gradient(135deg,rgba(10,36,114,.92),rgba(23,52,143,.92));color:#fff;padding:6px 12px;border-radius:999px;font-size:.66rem;font-weight:600;box-shadow:0 4px 16px rgba(10,36,114,.35);z-index:55;display:inline-flex;align-items:center;gap:6px;text-decoration:none;opacity:.92}
-  .wm-dot{width:6px;height:6px;border-radius:50%;background:#10B981;box-shadow:0 0 8px #10B981;animation:wmPulse 2s infinite}
-  @keyframes wmPulse{0%,100%{opacity:1}50%{opacity:.5}}
-  footer.app-footer{max-width:1180px;margin:32px auto 0;padding:0 16px 28px;color:var(--text-faint);font-size:.74rem;text-align:center;line-height:1.7}
-  footer .dev-line b{background:linear-gradient(135deg,var(--navy),var(--navy-soft));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
-  body.dark footer .dev-line b{background:linear-gradient(135deg,#7FA0F5,#3B5BDB);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-  footer a{color:var(--navy-soft);text-decoration:none;font-weight:600}
+
+  /* ===== WATERMARK — KUBWA INAONEKANA ===== */
+  .wm-badge{position:fixed;bottom:16px;right:16px;background:linear-gradient(135deg,#0A2472,#17348f);color:#fff;padding:10px 18px;border-radius:14px;font-size:.75rem;font-weight:700;box-shadow:0 8px 24px rgba(10,36,114,.5);z-index:100;display:flex;align-items:center;gap:8px;text-decoration:none;border:1px solid rgba(255,255,255,.2);transition:transform .2s}
+  .wm-badge:hover{transform:translateY(-2px) scale(1.03)}
+  .wm-badge .wm-dot{width:8px;height:8px;border-radius:50%;background:#10B981;box-shadow:0 0 12px #10B981;animation:wmPulse 2s infinite}
+  @keyframes wmPulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .wm-badge .wm-name{color:#fff}
+  .wm-badge .wm-phone{font-size:.68rem;opacity:.8;font-weight:500}
+  @media(max-width:920px){.wm-badge{bottom:86px;right:12px;padding:8px 14px;font-size:.7rem}}
+
+  /* Footer */
+  footer.app-footer{max-width:1180px;margin:36px auto 0;padding:0 20px 40px;color:var(--text-faint);font-size:.76rem;text-align:center;line-height:1.8}
+  footer .dev-line b{background:linear-gradient(135deg,var(--navy),var(--navy-soft));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800;font-size:.95rem}
+  body.dark footer .dev-line b{background:linear-gradient(135deg,#7FA0F5,#3B5BDB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  footer a{color:var(--navy-soft);text-decoration:none;font-weight:700}
+  body.dark footer a{color:#7FA0F5}
+  footer .copyright{margin-top:8px;opacity:.7;font-size:.7rem}
+
   .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg-elevated);border-top:1px solid var(--border);padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:60;justify-content:space-around}
   .mobile-nav button{flex:1;border:none;background:transparent;color:var(--text-faint);font-family:inherit;font-size:.64rem;font-weight:600;padding:6px 2px;cursor:pointer;border-radius:8px}
   .mobile-nav button.active{color:#fff;background:var(--navy)}
-  @media(max-width:920px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.chart-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}nav.tabs{display:none}.mobile-nav{display:flex}body{padding-bottom:70px}.wm-badge{bottom:82px}}
+  @media(max-width:920px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.chart-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}nav.tabs{display:none}.mobile-nav{display:flex}body{padding-bottom:70px}}
 </style>
 </head>
 <body>
 
+<!-- ============================================================
+     AUTH SCREEN — INAONEKANA KILA MARA
+     ============================================================ -->
 <div id="authScreen">
-  <div class="auth-box">
-    <div class="auth-logo">💰</div>
-    <h2 id="authTitle">Ingia</h2>
-    <p class="sub" id="authSub">Ingia kwenye akaunti yako</p>
-    <div id="signupFields" style="display:none">
-      <input type="text" class="auth-input" id="authName" placeholder="Jina lako kamili">
-      <input type="tel" class="auth-input" id="authPhone" placeholder="Namba ya simu (+255...)">
-    </div>
-    <input type="email" class="auth-input" id="authEmail" placeholder="Barua pepe" autocomplete="email">
-    <input type="password" class="auth-input" id="authPassword" placeholder="Neno la siri (6+)" autocomplete="current-password">
-    <p class="auth-error" id="authError"></p>
-    <button class="btn full" id="authSubmit" type="button">Ingia</button>
-    <p class="auth-toggle-link"><a href="#" id="authToggle">Huna akaunti? Jisajili</a></p>
+  <div class="auth-box" id="authBox">
+    <!-- Inajazwa na JS -->
   </div>
 </div>
 
-<div id="appRoot" style="display:none">
+<!-- ============================================================
+     APP
+     ============================================================ -->
+<div id="appRoot">
   <header class="topbar">
     <div class="brand"><span class="mark">Ramani ya Kifedha</span></div>
     <nav class="tabs" id="desktopTabs">
@@ -124,6 +154,7 @@
       <button data-page="history">Historia</button>
     </nav>
     <div class="header-actions">
+      <button class="icon-btn" id="lockNowBtn" title="Funga sasa">🔒</button>
       <button class="icon-btn" id="themeToggle" title="Theme">🌙</button>
       <button class="icon-btn" id="signOutBtn" title="Toka">🚪</button>
     </div>
@@ -140,7 +171,7 @@
         <div class="card kpi-card"><span class="kpi-label">Akiba ya Mwezi</span><span class="kpi-value" id="kpiSavings">0</span><span class="kpi-sub" id="kpiSavingsSub">—</span></div>
       </div>
       <div class="chart-grid">
-        <div class="card chart-card"><h3>Mwelekeo wa Net Worth</h3><p class="hint">Historia + makadirio ya Monte Carlo</p><div class="chart-wrap"><canvas id="netWorthChart"></canvas></div></div>
+        <div class="card chart-card"><h3>Mwelekeo wa Net Worth</h3><p class="hint">Historia + makadirio (Monte Carlo)</p><div class="chart-wrap"><canvas id="netWorthChart"></canvas></div></div>
         <div class="card chart-card"><h3>Mgawanyo wa Matumizi</h3><p class="hint">Mwezi huu</p><div class="chart-wrap"><canvas id="expenseDonut"></canvas></div></div>
       </div>
       <div class="card narrative-card">
@@ -212,10 +243,15 @@
   <footer class="app-footer">
     <div class="dev-line">Imetengenezwa na <b>Mr. Buhalata</b></div>
     <div>📞 <a href="tel:+255615269169">+255 615 269 169</a></div>
-    <div>© 2025 Ramani ya Kifedha</div>
+    <div class="copyright">© 2025 Ramani ya Kifedha — Haki zote zimehifadhiwa</div>
   </footer>
 
-  <a class="wm-badge" href="tel:+255615269169"><span class="wm-dot"></span>Dev: Buhalata</a>
+  <!-- WATERMARK — INAONEKANA KILA MAHALI -->
+  <a class="wm-badge" href="tel:+255615269169" title="Wasiliana na developer">
+    <span class="wm-dot"></span>
+    <span class="wm-name">Dev: Mr. Buhalata</span>
+    <span class="wm-phone">+255 615 269 169</span>
+  </a>
 
   <div class="mobile-nav" id="mobileTabs">
     <button data-page="dashboard" class="active">Dashibodi</button>
@@ -228,15 +264,12 @@
 
 <script>
 /* ============================================================
-   SUPABASE CONFIG — credentials zako
+   SUPABASE CONFIG
    ============================================================ */
 const SUPABASE_URL = 'https://sldbrodqqshydbsigmjv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_9BUJLU9ynkG7cSMu5Etx_Q_-sMpPnmR';
-
 const { createClient } = window.supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true }
-});
+const db = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true } });
 
 /* ============================================================
    HELPERS
@@ -246,7 +279,7 @@ const currentMonthKey = () => new Date().toISOString().slice(0, 7);
 const monthKey = (d) => (d || '').slice(0, 7);
 const fmt = (n) => { const v = Number(n) || 0; return (v < 0 ? '-' : '') + 'Tsh ' + Math.abs(Math.round(v)).toLocaleString('en-US'); };
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function showToast(msg, ms = 2400) {
+function showToast(msg, ms = 2600) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
@@ -255,12 +288,83 @@ function showToast(msg, ms = 2400) {
 }
 
 /* ============================================================
+   BIOMETRIC / PIN YA KIFAA MODULE
+   ============================================================ */
+const BIOMETRIC = (() => {
+  const CRED_KEY = 'ramani_bio_cred_v1';
+  const SESSION_KEY = 'ramani_bio_session_v1';
+
+  function getCred() { try { return JSON.parse(localStorage.getItem(CRED_KEY)); } catch { return null; } }
+  function setCred(c) { localStorage.setItem(CRED_KEY, JSON.stringify(c)); }
+  function clearCred() { localStorage.removeItem(CRED_KEY); localStorage.removeItem(SESSION_KEY); }
+  function isEnabled() { return !!getCred(); }
+
+  function isSupported() {
+    return !!(window.PublicKeyCredential && navigator.credentials && window.isSecureContext);
+  }
+
+  async function enable(userEmail) {
+    if (!isSupported()) throw new Error('Kifaa hakiungi mkono biometric');
+
+    const userId = crypto.getRandomValues(new Uint8Array(32));
+    const cred = await navigator.credentials.create({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp: { name: 'Ramani ya Kifedha', id: location.hostname },
+        user: { id: userId, name: userEmail || 'user@ramani', displayName: userEmail || 'Mtumiaji' },
+        pubKeyCredParams: [
+          { type: 'public-key', alg: -7 },
+          { type: 'public-key', alg: -257 }
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          userVerification: 'required',
+          residentKey: 'preferred'
+        },
+        timeout: 60000,
+        attestation: 'none'
+      }
+    });
+
+    if (!cred) throw new Error('Usajili ulikatishwa');
+
+    const b64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
+    setCred({ credentialId: b64, email: userEmail, created: Date.now() });
+    return true;
+  }
+
+  async function verify() {
+    const c = getCred();
+    if (!c) throw new Error('Hakuna biometric iliyosajiliwa');
+
+    const rawIdBytes = Uint8Array.from(atob(c.credentialId), ch => ch.charCodeAt(0));
+    const assertion = await navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rpId: location.hostname,
+        allowCredentials: [{ type: 'public-key', id: rawIdBytes }],
+        userVerification: 'required',
+        timeout: 60000
+      }
+    });
+
+    if (!assertion) throw new Error('Uthibitisho ulikatishwa');
+    return true;
+  }
+
+  function disable() { clearCred(); }
+
+  return { enable, verify, disable, isEnabled, isSupported, getCred };
+})();
+
+/* ============================================================
    STATE
    ============================================================ */
 let DATA = { income: [], expense: [], asset: [], debt: [], goal: [], theme: localStorage.getItem('theme') || 'light' };
 let currentUser = null;
 let historyFilter = 'all';
 let nwChart = null, donutChart = null;
+let bioUnlocked = false;
 
 /* ============================================================
    SUPABASE OPERATIONS
@@ -310,18 +414,13 @@ async function dbClearAll() {
 const totalAssets = () => DATA.asset.reduce((s, a) => s + Number(a.value || 0), 0);
 const totalDebts = () => DATA.debt.reduce((s, d) => s + Number(d.amount || 0), 0);
 const netWorth = () => totalAssets() - totalDebts();
-
 const monthlyIncome = (m) => DATA.income.filter(x => monthKey(x.date) === m).reduce((s, x) => s + Number(x.amount || 0), 0);
 const monthlyExpense = (m) => DATA.expense.filter(x => monthKey(x.date) === m).reduce((s, x) => s + Number(x.amount || 0), 0);
-
 function expenseBreakdown(m) {
   const by = {};
-  DATA.expense.filter(e => monthKey(e.date) === m).forEach(e => {
-    by[e.category] = (by[e.category] || 0) + Number(e.amount || 0);
-  });
+  DATA.expense.filter(e => monthKey(e.date) === m).forEach(e => { by[e.category] = (by[e.category] || 0) + Number(e.amount || 0); });
   return by;
 }
-
 function buildNetWorthHistory() {
   const months = [];
   const today = new Date();
@@ -336,27 +435,25 @@ function buildNetWorthHistory() {
 }
 
 /* ============================================================
-   PREDICTION — Holt + Monte Carlo
+   PREDICTION
    ============================================================ */
 const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0;
 const stdev = a => { if (a.length < 2) return 0; const m = mean(a); return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1)); };
 const percentile = (sorted, p) => { const i = (sorted.length - 1) * p; const lo = Math.floor(i), hi = Math.ceil(i); return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo); };
 const gaussian = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
-
-function holtLinear(values, alpha = 0.45, beta = 0.3) {
+function holtLinear(values, a = 0.45, b = 0.3) {
   if (values.length < 2) return { trend: 0, fitted: [{ level: values[0] || 0, trend: 0 }] };
   let level = values[0], trend = values[1] - values[0];
   const fitted = [];
   for (let i = 1; i < values.length; i++) {
     const prev = level;
-    level = alpha * values[i] + (1 - alpha) * (level + trend);
-    trend = beta * (level - prev) + (1 - beta) * trend;
+    level = a * values[i] + (1 - a) * (level + trend);
+    trend = b * (level - prev) + (1 - b) * trend;
     fitted.push({ level, trend });
   }
   return { level, trend, fitted };
 }
-
-function buildForecast(horizon = 60) {
+function buildForecast(h = 60) {
   const months = [];
   const today = new Date();
   for (let i = 11; i >= 0; i--) {
@@ -367,21 +464,16 @@ function buildForecast(horizon = 60) {
   const { trend, fitted } = holtLinear(savings);
   const residuals = savings.slice(1).map((v, i) => v - (fitted[i].level + fitted[i].trend));
   const sigma = Math.max(stdev(residuals), Math.abs(trend) * 0.3, 1);
-
   const paths = [];
   for (let p = 0; p < 500; p++) {
     let v = netWorth(), t = trend;
     const path = [v];
-    for (let h = 1; h <= horizon; h++) {
-      t *= 0.98;
-      v += t + gaussian() * sigma;
-      path.push(v);
-    }
+    for (let hh = 1; hh <= h; hh++) { t *= 0.98; v += t + gaussian() * sigma; path.push(v); }
     paths.push(path);
   }
   const bands = { p10: [], p50: [], p90: [] };
-  for (let h = 0; h <= horizon; h++) {
-    const col = paths.map(p => p[h]).sort((a, b) => a - b);
+  for (let hh = 0; hh <= h; hh++) {
+    const col = paths.map(p => p[hh]).sort((a, b) => a - b);
     bands.p10.push(percentile(col, 0.1));
     bands.p50.push(percentile(col, 0.5));
     bands.p90.push(percentile(col, 0.9));
@@ -394,20 +486,13 @@ function buildForecast(horizon = 60) {
    ============================================================ */
 function renderCharts() {
   const dark = DATA.theme === 'dark';
-  const tc = {
-    grid: dark ? 'rgba(255,255,255,0.06)' : 'rgba(16,24,40,0.06)',
-    text: dark ? '#9BA6BC' : '#5B6579',
-    line: dark ? '#7FA0F5' : '#0A2472',
-    lineProj: dark ? '#3D4A63' : '#94A3B8'
-  };
+  const tc = { grid: dark ? 'rgba(255,255,255,0.06)' : 'rgba(16,24,40,0.06)', text: dark ? '#9BA6BC' : '#5B6579', line: dark ? '#7FA0F5' : '#0A2472', lineProj: dark ? '#3D4A63' : '#94A3B8' };
   const history = buildNetWorthHistory();
   const forecast = buildForecast(60);
-
   const futureKeys = [];
   const [ly, lm] = history[history.length - 1].month.split('-').map(Number);
   for (let i = 1; i <= 60; i++) futureKeys.push(new Date(ly, lm - 1 + i, 1).toISOString().slice(0, 7));
   const allMonths = [...history.map(h => h.month), ...futureKeys];
-
   const histVals = [...history.map(h => Math.round(h.value)), ...new Array(60).fill(null)];
   const startNW = Math.round(history[history.length - 1].value);
   const p90 = [...new Array(11).fill(null), startNW, ...forecast.bands.p90.slice(1).map(Math.round)];
@@ -418,23 +503,16 @@ function renderCharts() {
   if (nwChart) nwChart.destroy();
   nwChart = new Chart(ctx1, {
     type: 'line',
-    data: {
-      labels: allMonths,
-      datasets: [
-        { label: 'Halisi', data: histVals, borderColor: tc.line, backgroundColor: dark ? 'rgba(127,160,245,0.12)' : 'rgba(10,36,114,0.08)', fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2.5 },
-        { label: 'P90', data: p90, borderColor: 'transparent', backgroundColor: 'rgba(16,185,129,0.14)', fill: '+1', tension: 0.35, pointRadius: 0, borderWidth: 0 },
-        { label: 'P10', data: p10, borderColor: 'transparent', fill: false, tension: 0.35, pointRadius: 0, borderWidth: 0 },
-        { label: 'Wastani', data: p50, borderColor: tc.lineProj, borderDash: [6, 4], fill: false, tension: 0.35, pointRadius: 0, borderWidth: 2 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
+    data: { labels: allMonths, datasets: [
+      { label: 'Halisi', data: histVals, borderColor: tc.line, backgroundColor: dark ? 'rgba(127,160,245,0.12)' : 'rgba(10,36,114,0.08)', fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2.5 },
+      { label: 'P90', data: p90, borderColor: 'transparent', backgroundColor: 'rgba(16,185,129,0.14)', fill: '+1', tension: 0.35, pointRadius: 0, borderWidth: 0 },
+      { label: 'P10', data: p10, borderColor: 'transparent', fill: false, tension: 0.35, pointRadius: 0, borderWidth: 0 },
+      { label: 'Wastani', data: p50, borderColor: tc.lineProj, borderDash: [6, 4], fill: false, tension: 0.35, pointRadius: 0, borderWidth: 2 }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
       plugins: { legend: { position: 'bottom', labels: { color: tc.text, boxWidth: 12, font: { size: 10 }, filter: i => i.text !== 'P10' } } },
-      scales: {
-        x: { ticks: { color: tc.text, maxRotation: 0, autoSkip: true, font: { size: 9 } }, grid: { color: 'transparent' } },
-        y: { ticks: { color: tc.text, callback: v => Math.abs(v) >= 1e6 ? (v/1e6).toFixed(1)+'M' : Math.abs(v) >= 1e3 ? (v/1e3).toFixed(0)+'K' : v, font: { size: 9 } }, grid: { color: tc.grid } }
-      }
-    }
+      scales: { x: { ticks: { color: tc.text, maxRotation: 0, autoSkip: true, font: { size: 9 } }, grid: { color: 'transparent' } },
+                y: { ticks: { color: tc.text, callback: v => Math.abs(v) >= 1e6 ? (v/1e6).toFixed(1)+'M' : Math.abs(v) >= 1e3 ? (v/1e3).toFixed(0)+'K' : v, font: { size: 9 } }, grid: { color: tc.grid } } } }
   });
 
   const breakdown = expenseBreakdown(currentMonthKey());
@@ -442,38 +520,29 @@ function renderCharts() {
   const ctx2 = document.getElementById('expenseDonut').getContext('2d');
   if (donutChart) donutChart.destroy();
   if (!labels.length) return;
-  donutChart = new Chart(ctx2, {
-    type: 'doughnut',
+  donutChart = new Chart(ctx2, { type: 'doughnut',
     data: { labels, datasets: [{ data: values, backgroundColor: ['#0A2472','#10B981','#F59E0B','#EF4444','#7C3AED','#06B6D4','#EC4899'], borderWidth: 2, borderColor: dark ? '#182234' : '#fff' }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false } } }
-  });
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false } } } });
 }
 
 /* ============================================================
-   RENDER
+   RENDER APP
    ============================================================ */
 function renderDashboard() {
   const m = currentMonthKey();
   const nw = netWorth(), inc = monthlyIncome(m), exp = monthlyExpense(m), sav = inc - exp;
-
   document.getElementById('kpiNetWorth').textContent = fmt(nw);
   document.getElementById('kpiNetWorth').className = 'kpi-value ' + (nw >= 0 ? 'good' : 'bad');
   document.getElementById('kpiNetWorthSub').textContent = 'Mali: ' + fmt(totalAssets()) + ' · Madeni: ' + fmt(totalDebts());
-
   document.getElementById('kpiIncome').textContent = fmt(inc);
   document.getElementById('kpiIncomeSub').textContent = DATA.income.filter(i => monthKey(i.date) === m).length + ' vyanzo';
-
   document.getElementById('kpiExpense').textContent = fmt(exp);
   document.getElementById('kpiExpenseSub').textContent = DATA.expense.filter(e => monthKey(e.date) === m).length + ' matumizi';
-
   document.getElementById('kpiSavings').textContent = fmt(sav);
   document.getElementById('kpiSavings').className = 'kpi-value ' + (sav >= 0 ? 'good' : 'bad');
   document.getElementById('kpiSavingsSub').textContent = sav >= 0 ? 'Unaokoa vizuri' : 'Matumizi yanazidi kipato';
-
   const rate = inc > 0 ? Math.round((sav / inc) * 100) : 0;
-  document.getElementById('narrativeText').textContent =
-    `Kipato: ${fmt(inc)}, matumizi: ${fmt(exp)}, akiba: ${fmt(sav)} (${rate}%). Net Worth yako ni ${fmt(nw)}.`;
-
+  document.getElementById('narrativeText').textContent = `Kipato: ${fmt(inc)}, matumizi: ${fmt(exp)}, akiba: ${fmt(sav)} (${rate}%). Net Worth yako ni ${fmt(nw)}.`;
   renderCharts();
 }
 
@@ -520,12 +589,12 @@ document.querySelectorAll('#desktopTabs button, #mobileTabs button').forEach(b =
     if (b.dataset.page === 'history') renderHistory();
   });
 });
-
 function applyTheme() {
   document.body.classList.toggle('dark', DATA.theme === 'dark');
-  document.getElementById('themeToggle').textContent = DATA.theme === 'dark' ? '☀️' : '🌙';
+  const tt = document.getElementById('themeToggle');
+  if (tt) tt.textContent = DATA.theme === 'dark' ? '☀️' : '🌙';
   localStorage.setItem('theme', DATA.theme);
-  if (document.getElementById('page-dashboard').classList.contains('active')) renderCharts();
+  if (document.getElementById('page-dashboard')?.classList.contains('active')) renderCharts();
 }
 document.getElementById('themeToggle').addEventListener('click', () => {
   DATA.theme = DATA.theme === 'dark' ? 'light' : 'dark';
@@ -533,76 +602,202 @@ document.getElementById('themeToggle').addEventListener('click', () => {
 });
 
 /* ============================================================
-   AUTH
+   AUTH SCREEN — RENDER
    ============================================================ */
-let isSignUp = false;
 const authScreen = document.getElementById('authScreen');
+const authBox = document.getElementById('authBox');
 
-document.getElementById('authToggle').addEventListener('click', (e) => {
-  e.preventDefault();
-  isSignUp = !isSignUp;
-  document.getElementById('authTitle').textContent = isSignUp ? 'Jisajili' : 'Ingia';
-  document.getElementById('authSub').textContent = isSignUp ? 'Tengeneza akaunti mpya' : 'Ingia kwenye akaunti yako';
-  document.getElementById('signupFields').style.display = isSignUp ? 'block' : 'none';
-  document.getElementById('authSubmit').textContent = isSignUp ? 'Jisajili' : 'Ingia';
-  document.getElementById('authToggle').textContent = isSignUp ? 'Tayari una akaunti? Ingia' : 'Huna akaunti? Jisajili';
-  document.getElementById('authError').textContent = '';
-});
+function renderAuth(step = 'login') {
+  if (step === 'login') {
+    authBox.innerHTML = `
+      <div class="auth-logo">💰</div>
+      <h2>Karibu Ramani</h2>
+      <p class="sub">Ingia au jisajili ili kuanza</p>
+      <div id="signupFields" style="display:none">
+        <input type="text" class="auth-input" id="authName" placeholder="Jina lako kamili">
+        <input type="tel" class="auth-input" id="authPhone" placeholder="Namba ya simu (+255...)">
+      </div>
+      <input type="email" class="auth-input" id="authEmail" placeholder="Barua pepe" autocomplete="email">
+      <input type="password" class="auth-input" id="authPassword" placeholder="Neno la siri (6+)" autocomplete="current-password">
+      <p class="auth-error" id="authError"></p>
+      <button class="btn full" id="authSubmit" type="button">Ingia</button>
+      <p class="auth-toggle-link"><a href="#" id="authToggle">Huna akaunti? Jisajili</a></p>
+      <div class="auth-brand">
+        Imetengenezwa na <b>Mr. Buhalata</b><br>
+        📞 <a href="tel:+255615269169" style="color:inherit;text-decoration:none;font-weight:700">+255 615 269 169</a>
+      </div>
+    `;
+    let isSignUp = false;
+    document.getElementById('authToggle').addEventListener('click', (e) => {
+      e.preventDefault();
+      isSignUp = !isSignUp;
+      authBox.querySelector('h2').textContent = isSignUp ? 'Tengeneza Akaunti' : 'Karibu Ramani';
+      authBox.querySelector('p.sub').textContent = isSignUp ? 'Jisajili ili kuanza kufuatilia fedha zako' : 'Ingia au jisajili ili kuanza';
+      document.getElementById('signupFields').style.display = isSignUp ? 'block' : 'none';
+      document.getElementById('authSubmit').textContent = isSignUp ? 'Jisajili' : 'Ingia';
+      document.getElementById('authToggle').textContent = isSignUp ? 'Tayari una akaunti? Ingia' : 'Huna akaunti? Jisajili';
+      document.getElementById('authError').textContent = '';
+    });
 
-document.getElementById('authSubmit').addEventListener('click', async () => {
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value;
-  const errEl = document.getElementById('authError');
-  const btn = document.getElementById('authSubmit');
-  errEl.textContent = '';
-  btn.disabled = true;
-
-  try {
-    if (isSignUp) {
-      const name = document.getElementById('authName').value.trim();
-      const phone = document.getElementById('authPhone').value.trim();
-      if (!email || password.length < 6) throw new Error('Barua pepe na neno la siri (6+) zinahitajika');
-      const { error } = await db.auth.signUp({ email, password, options: { data: { full_name: name, phone } } });
-      if (error) throw error;
-      showToast('✅ Akaunti imetengenezwa. Angalia barua pepe.');
-    } else {
-      const { error } = await db.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-    }
-  } catch (err) {
-    errEl.textContent = err.message;
-  } finally {
-    btn.disabled = false;
+    document.getElementById('authSubmit').addEventListener('click', async () => {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const errEl = document.getElementById('authError');
+      const btn = document.getElementById('authSubmit');
+      errEl.textContent = ''; btn.disabled = true;
+      try {
+        if (isSignUp) {
+          const name = document.getElementById('authName').value.trim();
+          const phone = document.getElementById('authPhone').value.trim();
+          if (!email || password.length < 6) throw new Error('Barua pepe na neno la siri (6+) zinahitajika');
+          const { error } = await db.auth.signUp({ email, password, options: { data: { full_name: name, phone } } });
+          if (error) throw error;
+          showToast('✅ Akaunti imetengenezwa');
+        } else {
+          const { error } = await db.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+        }
+      } catch (err) {
+        errEl.textContent = err.message;
+      } finally { btn.disabled = false; }
+    });
+  } else if (step === 'bio-setup') {
+    authBox.innerHTML = `
+      <div class="bio-icon">🔐</div>
+      <h2>Wezesha Kuingia kwa Kidole</h2>
+      <p class="sub">Tumia <b>fingerprint, Face ID, au PIN ya kifaa chako</b> ili kuingia haraka wakati ujao bila kuandika neno la siri.</p>
+      <p class="auth-error" id="bioError"></p>
+      <button class="btn full green" id="bioEnableBtn" type="button">✅ Wezesha Sasa</button>
+      <button class="btn full ghost" id="bioSkipBtn" type="button" style="margin-top:8px;color:var(--text-muted);border-color:var(--border)">Ruka hatua hii</button>
+      <div class="auth-brand">
+        Imetengenezwa na <b>Mr. Buhalata</b><br>📞 +255 615 269 169
+      </div>
+    `;
+    document.getElementById('bioSkipBtn').addEventListener('click', () => {
+      enterApp();
+    });
+    document.getElementById('bioEnableBtn').addEventListener('click', async () => {
+      const errEl = document.getElementById('bioError');
+      const btn = document.getElementById('bioEnableBtn');
+      errEl.textContent = ''; btn.disabled = true;
+      try {
+        await BIOMETRIC.enable(currentUser?.email);
+        showToast('✅ Kidole kimewekwa!');
+        setTimeout(() => enterApp(), 800);
+      } catch (err) {
+        errEl.textContent = err.message;
+        btn.disabled = false;
+      }
+    });
+  } else if (step === 'bio-unlock') {
+    authBox.innerHTML = `
+      <div class="bio-icon">👆</div>
+      <h2>Karibu Tena</h2>
+      <p class="sub">Thibitisha kwa <b>kidole au PIN ya kifaa chako</b> ili kuendelea</p>
+      <p class="auth-error" id="bioError"></p>
+      <button class="btn full green" id="bioUnlockBtn" type="button">🔓 Fungua</button>
+      <button class="btn full ghost" id="bioSwitchUser" type="button" style="margin-top:8px;color:var(--text-muted);border-color:var(--border)">Badilisha akaunti</button>
+      <div class="auth-brand">
+        Imetengenezwa na <b>Mr. Buhalata</b><br>📞 +255 615 269 169
+      </div>
+    `;
+    document.getElementById('bioSwitchUser').addEventListener('click', async () => {
+      BIOMETRIC.disable();
+      await db.auth.signOut();
+      renderAuth('login');
+    });
+    document.getElementById('bioUnlockBtn').addEventListener('click', async () => {
+      const errEl = document.getElementById('bioError');
+      const btn = document.getElementById('bioUnlockBtn');
+      errEl.textContent = ''; btn.disabled = true;
+      try {
+        await BIOMETRIC.verify();
+        bioUnlocked = true;
+        enterApp();
+      } catch (err) {
+        errEl.textContent = err.message;
+        btn.disabled = false;
+      }
+    });
+    // Auto-trigger
+    setTimeout(() => {
+      const btn = document.getElementById('bioUnlockBtn');
+      if (btn) btn.click();
+    }, 400);
   }
-});
+}
 
-async function handleSession(session) {
-  if (session?.user) {
+/* ============================================================
+   APP FLOW
+   ============================================================ */
+function enterApp() {
+  authScreen.classList.add('hidden');
+  document.getElementById('appRoot').style.display = 'block';
+  applyTheme();
+  renderDashboard();
+  renderHistory();
+}
+
+async function showAuthFlow() {
+  const session = await db.auth.getSession();
+  const s = session?.data?.session;
+
+  if (s?.user && bioUnlocked) {
+    // Session ipo tayari, kuingia moja kwa moja
+    currentUser = s.user;
+    enterApp();
+    return;
+  }
+
+  if (s?.user && BIOMETRIC.isEnabled() && BIOMETRIC.getCred()?.email === s.user.email) {
+    // Session ipo + biometric imewekwa → onyesha biometric unlock
+    currentUser = s.user;
+    authScreen.classList.remove('hidden');
+    document.getElementById('appRoot').style.display = 'none';
+    renderAuth('bio-unlock');
+    return;
+  }
+
+  // Hakuna session → onyesha login
+  authScreen.classList.remove('hidden');
+  document.getElementById('appRoot').style.display = 'none';
+  renderAuth('login');
+}
+
+db.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session?.user) {
     currentUser = session.user;
-    authScreen.classList.add('hidden');
-    document.getElementById('appRoot').style.display = 'block';
     try {
       await loadAll();
-      applyTheme();
-      renderDashboard();
-      renderHistory();
+      // Kama biometric haijawashwa, mwulize
+      if (!BIOMETRIC.isEnabled() && BIOMETRIC.isSupported()) {
+        authScreen.classList.remove('hidden');
+        document.getElementById('appRoot').style.display = 'none';
+        renderAuth('bio-setup');
+      } else {
+        bioUnlocked = true;
+        enterApp();
+      }
     } catch (err) {
       console.error(err);
       showToast('❌ Tatizo la kupakua data: ' + err.message);
     }
-  } else {
+  } else if (event === 'SIGNED_OUT') {
     currentUser = null;
-    authScreen.classList.remove('hidden');
-    document.getElementById('appRoot').style.display = 'none';
+    bioUnlocked = false;
     DATA = { income: [], expense: [], asset: [], debt: [], goal: [], theme: DATA.theme };
+    renderAuth('login');
   }
-}
-
-db.auth.onAuthStateChange((_e, session) => handleSession(session));
+});
 
 document.getElementById('signOutBtn').addEventListener('click', async () => {
   if (!confirm('Una uhakika unataka kutoka?')) return;
   await db.auth.signOut();
+});
+
+document.getElementById('lockNowBtn').addEventListener('click', () => {
+  bioUnlocked = false;
+  showAuthFlow();
 });
 
 /* ============================================================
@@ -614,76 +809,45 @@ document.getElementById('expenseDate').value = todayStr();
 document.getElementById('formIncome').addEventListener('submit', async (e) => {
   e.preventDefault();
   try {
-    const rec = await dbAdd('income', {
-      source: document.getElementById('incomeSource').value.trim(),
-      amount: Number(document.getElementById('incomeAmount').value),
-      date: document.getElementById('incomeDate').value
-    });
+    const rec = await dbAdd('income', { source: document.getElementById('incomeSource').value.trim(), amount: Number(document.getElementById('incomeAmount').value), date: document.getElementById('incomeDate').value });
     DATA.income.unshift(rec);
     e.target.reset();
     document.getElementById('incomeDate').value = todayStr();
-    renderDashboard();
-    showToast('✅ Kipato kimeongezwa');
+    renderDashboard(); showToast('✅ Kipato kimeongezwa');
   } catch (err) { showToast('❌ ' + err.message); }
 });
-
 document.getElementById('formExpense').addEventListener('submit', async (e) => {
   e.preventDefault();
   try {
-    const rec = await dbAdd('expense', {
-      category: document.getElementById('expenseCategory').value,
-      amount: Number(document.getElementById('expenseAmount').value),
-      date: document.getElementById('expenseDate').value
-    });
+    const rec = await dbAdd('expense', { category: document.getElementById('expenseCategory').value, amount: Number(document.getElementById('expenseAmount').value), date: document.getElementById('expenseDate').value });
     DATA.expense.unshift(rec);
     e.target.reset();
     document.getElementById('expenseDate').value = todayStr();
-    renderDashboard();
-    showToast('✅ Matumizi yameongezwa');
+    renderDashboard(); showToast('✅ Matumizi yameongezwa');
   } catch (err) { showToast('❌ ' + err.message); }
 });
-
 document.getElementById('formAsset').addEventListener('submit', async (e) => {
   e.preventDefault();
   try {
-    const rec = await dbAdd('asset', {
-      name: document.getElementById('assetName').value.trim(),
-      value: Number(document.getElementById('assetValue').value),
-      date: todayStr()
-    });
+    const rec = await dbAdd('asset', { name: document.getElementById('assetName').value.trim(), value: Number(document.getElementById('assetValue').value), date: todayStr() });
     DATA.asset.unshift(rec);
-    e.target.reset();
-    renderDashboard();
-    showToast('✅ Mali imeongezwa');
+    e.target.reset(); renderDashboard(); showToast('✅ Mali imeongezwa');
   } catch (err) { showToast('❌ ' + err.message); }
 });
-
 document.getElementById('formDebt').addEventListener('submit', async (e) => {
   e.preventDefault();
   try {
-    const rec = await dbAdd('debt', {
-      name: document.getElementById('debtName').value.trim(),
-      amount: Number(document.getElementById('debtAmount').value),
-      interest_rate: 0,
-      date: todayStr()
-    });
+    const rec = await dbAdd('debt', { name: document.getElementById('debtName').value.trim(), amount: Number(document.getElementById('debtAmount').value), interest_rate: 0, date: todayStr() });
     DATA.debt.unshift(rec);
-    e.target.reset();
-    renderDashboard();
-    showToast('✅ Deni limeongezwa');
+    e.target.reset(); renderDashboard(); showToast('✅ Deni limeongezwa');
   } catch (err) { showToast('❌ ' + err.message); }
 });
-
 document.getElementById('formGoal').addEventListener('submit', async (e) => {
   e.preventDefault();
   try {
-    const rec = await dbAdd('goal', {
-      text: document.getElementById('goalText').value.trim(),
-      date: todayStr()
-    });
+    const rec = await dbAdd('goal', { text: document.getElementById('goalText').value.trim(), date: todayStr() });
     DATA.goal.unshift(rec);
-    e.target.reset();
-    showToast('✅ Lengo limewekwa');
+    e.target.reset(); showToast('✅ Lengo limewekwa');
   } catch (err) { showToast('❌ ' + err.message); }
 });
 
@@ -692,8 +856,7 @@ document.getElementById('resetAllBtn').addEventListener('click', async () => {
   try {
     await dbClearAll();
     DATA = { income: [], expense: [], asset: [], debt: [], goal: [], theme: DATA.theme };
-    renderDashboard(); renderHistory();
-    showToast('🗑 Zote zimefutwa');
+    renderDashboard(); renderHistory(); showToast('🗑 Zote zimefutwa');
   } catch (err) { showToast('❌ ' + err.message); }
 });
 
@@ -708,10 +871,8 @@ document.querySelectorAll('.filter-pills button').forEach(b => {
 /* ============================================================
    INIT
    ============================================================ */
-(async () => {
-  const { data: { session } } = await db.auth.getSession();
-  handleSession(session);
-})();
+applyTheme();
+showAuthFlow();
 </script>
 </body>
-      </html>
+  </html>
