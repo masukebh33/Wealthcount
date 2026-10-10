@@ -4,952 +4,248 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ramani ya Kifedha</title>
-
-<!-- PWA Meta -->
 <meta name="theme-color" content="#0A2472">
-<meta name="description" content="Mfumo binafsi wa kufuatilia kipato, matumizi, mali na mwelekeo wa kifedha.">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Ramani">
-<link rel="manifest" id="manifestLink">
-
-<!-- Google Fonts (weights 3 pekee — 40% ndogo) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-<!-- Chart.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  /* ============================================================
-     1. DESIGN TOKENS
-     ============================================================ */
-  :root {
-    --navy: #0A2472;
-    --navy-soft: #17348f;
-    --good: #10B981;
-    --bad: #EF4444;
-    --warn: #F59E0B;
-
-    --bg: #F8FAFC;
-    --bg-elevated: #FFFFFF;
-    --bg-sunken: #EEF1F6;
-    --border: #E1E7F0;
-    --text: #101828;
-    --text-muted: #5B6579;
-    --text-faint: #6B7280;
-    --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.05);
-    --radius: 14px;
-  }
-
-  body.dark {
-    --navy: #1E3A8A;
-    --navy-soft: #3B5BDB;
-    --bg: #111827;
-    --bg-elevated: #182234;
-    --bg-sunken: #0D1420;
-    --border: #2A3547;
-    --text: #EDF1F7;
-    --text-muted: #9BA6BC;
-    --text-faint: #8B95A8;
-    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
-  }
-
-  /* ============================================================
-     2. RESET & BASE
-     ============================================================ */
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-
-  body {
-    margin: 0;
-    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    transition: background 0.35s ease, color 0.35s ease;
-    -webkit-font-smoothing: antialiased;
-    padding-bottom: 60px;
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* ============================================================
-     3. HEADER
-     ============================================================ */
-  header.topbar {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: var(--navy);
-    color: #fff;
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    transition: box-shadow 0.25s ease, background 0.35s ease;
-  }
-  header.topbar.scrolled {
-    box-shadow: 0 1px 2px rgba(16,24,40,0.08), 0 4px 20px rgba(16,24,40,0.15);
-  }
-
-  .brand { display: flex; align-items: baseline; gap: 10px; }
-  .brand .mark {
-    font-weight: 700;
-    font-size: 1.22rem;
-    letter-spacing: -0.02em;
-  }
-  .brand .sub {
-    font-size: 0.78rem;
-    color: rgba(255,255,255,0.65);
-    font-weight: 400;
-  }
-
-  nav.tabs {
-    display: flex;
-    gap: 4px;
-    background: rgba(255,255,255,0.08);
-    padding: 4px;
-    border-radius: 999px;
-  }
-  nav.tabs button {
-    border: none;
-    background: transparent;
-    color: rgba(255,255,255,0.75);
-    padding: 8px 16px;
-    border-radius: 999px;
-    font-family: inherit;
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-  }
-  nav.tabs button.active { background: #fff; color: var(--navy); }
-  nav.tabs button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-
-  .header-actions { display: flex; align-items: center; gap: 10px; }
-
-  .theme-toggle, .install-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.18);
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-family: inherit;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #fff;
-    transition: background 0.2s, transform 0.1s;
-  }
-  .theme-toggle:hover, .install-btn:hover { background: rgba(255,255,255,0.2); }
-  .theme-toggle:active, .install-btn:active { transform: scale(0.97); }
-  .theme-toggle:focus-visible, .install-btn:focus-visible {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-  }
-  .install-btn { display: none; background: rgba(16,185,129,0.25); border-color: rgba(16,185,129,0.4); }
-  .install-btn:hover { background: rgba(16,185,129,0.4); }
-
-  /* ============================================================
-     4. LAYOUT
-     ============================================================ */
-  main { max-width: 1180px; margin: 0 auto; padding: 26px 20px 0; }
-
-  .page { display: none; animation: fadeIn 0.35s ease; }
-  .page.active { display: block; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  h1.page-title {
-    font-size: clamp(1.25rem, 2.6vw, 1.5rem);
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    margin: 4px 0 4px;
-  }
-  p.page-desc {
-    color: var(--text-muted);
-    margin: 0 0 20px;
-    font-size: 0.92rem;
-    max-width: 62ch;
-  }
-
-  /* ============================================================
-     5. CARDS
-     ============================================================ */
-  .card {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    transition: background 0.35s ease, border-color 0.35s ease;
-  }
-
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 18px;
-  }
-  .kpi-card {
-    padding: 18px 18px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .kpi-label {
-    font-size: 0.74rem;
-    color: var(--text-muted);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
-  .kpi-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-  }
-  .kpi-sub { font-size: 0.74rem; color: var(--text-faint); }
-  .kpi-value.good { color: var(--good); }
-  .kpi-value.bad { color: var(--bad); }
-
-  .chart-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 14px;
-    margin-bottom: 18px;
-  }
-  .chart-card { padding: 18px 20px 12px; }
-  .chart-card h3 { margin: 0 0 2px; font-size: 0.95rem; font-weight: 700; }
-  .chart-card p.hint {
-    margin: 0 0 10px;
-    font-size: 0.74rem;
-    color: var(--text-faint);
-  }
-  .chart-wrap { position: relative; height: 260px; }
-  .donut-click-info {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    min-height: 18px;
-    margin-top: 6px;
-  }
-
-  .narrative-card {
-    padding: 20px 22px;
-    margin-bottom: 20px;
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-  }
-  .narrative-icon {
-    flex-shrink: 0;
-    width: 38px; height: 38px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--navy), var(--navy-soft));
-    display: flex; align-items: center; justify-content: center;
-    color: #fff;
-    font-size: 1.05rem;
-  }
-  .narrative-card h3 { margin: 0 0 6px; font-size: 0.92rem; font-weight: 700; }
-  .narrative-card p { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-muted); }
-
-  /* ============================================================
-     6. FORMS
-     ============================================================ */
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-  }
-  .form-card { padding: 18px 20px; }
-  .form-card h3 { margin: 0 0 3px; font-size: 0.94rem; font-weight: 700; }
-  .form-card p.form-hint {
-    margin: 0 0 12px;
-    font-size: 0.76rem;
-    color: var(--text-faint);
-  }
-  .field { margin-bottom: 10px; }
-  .field label {
-    display: block;
-    font-size: 0.76rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    margin-bottom: 5px;
-  }
-  .field input, .field select {
-    width: 100%;
-    padding: 9px 11px;
-    border-radius: 9px;
-    border: 1px solid var(--border);
-    background: var(--bg-sunken);
-    color: var(--text);
-    font-family: inherit;
-    font-size: 0.86rem;
-    transition: border-color 0.2s, background 0.35s;
-  }
-  .field input:focus, .field select:focus {
-    outline: 2px solid var(--navy-soft);
-    outline-offset: 1px;
-    border-color: var(--navy-soft);
-  }
-
-  .btn {
-    border: none;
-    background: var(--navy);
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 9px;
-    font-family: inherit;
-    font-weight: 600;
-    font-size: 0.84rem;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-  }
-  .btn:hover { background: var(--navy-soft); }
-  .btn:active { transform: scale(0.97); }
-  .btn:focus-visible { outline: 2px solid var(--navy-soft); outline-offset: 2px; }
-  .btn.full { width: 100%; margin-top: 4px; }
-  .btn.ghost {
-    background: transparent;
-    color: var(--bad);
-    border: 1px solid var(--border);
-  }
-  .btn.ghost:hover { background: var(--bg-sunken); }
-
-  .btn-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  /* ============================================================
-     7. TRAJECTORY PAGE
-     ============================================================ */
-  .category-card {
-    padding: 24px 26px;
-    margin-bottom: 18px;
-    border-left: 5px solid var(--cat-color, var(--navy));
-  }
-  .category-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    font-size: 1.12rem;
-    color: var(--cat-color, var(--navy));
-    margin-bottom: 8px;
-  }
-  .category-card p { margin: 6px 0; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; }
-  .category-advice {
-    margin-top: 12px;
-    padding: 12px 14px;
-    background: var(--bg-sunken);
-    border-radius: 10px;
-    font-size: 0.84rem;
-    line-height: 1.55;
-  }
-
-  .projection-card { padding: 20px 22px; margin-bottom: 18px; }
-  .projection-card h3 { margin: 0 0 4px; font-size: 0.94rem; }
-  .projection-big {
-    font-size: 1.7rem;
-    font-weight: 700;
-    color: var(--navy-soft);
-    margin: 8px 0 4px;
-    font-variant-numeric: tabular-nums;
-  }
-  body.dark .projection-big { color: #7FA0F5; }
-
-  .scenario-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin: 14px 0 4px;
-  }
-  .scenario-item {
-    padding: 12px 14px;
-    border-radius: 10px;
-    background: var(--bg-sunken);
-  }
-  .scenario-item .label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    margin-bottom: 4px;
-  }
-  .scenario-item .amount {
-    font-size: 1.05rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-  }
-  .scenario-item.p10 .label { color: var(--bad); }
-  .scenario-item.p50 .label { color: var(--warn); }
-  .scenario-item.p90 .label { color: var(--good); }
-
-  .regime-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    margin-top: 8px;
-  }
-
-  .goal-list { display: flex; flex-direction: column; gap: 10px; }
-  .goal-item {
-    padding: 14px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .goal-item .txt { font-size: 0.86rem; font-weight: 600; flex: 1; }
-  .goal-item .txt small {
-    display: block;
-    font-weight: 400;
-    color: var(--text-faint);
-    margin-top: 3px;
-    font-size: 0.74rem;
-  }
-  .goal-item .txt small.eta {
-    color: var(--navy-soft);
-    font-weight: 600;
-    margin-top: 5px;
-  }
-  body.dark .goal-item .txt small.eta { color: #7FA0F5; }
-
-  /* ============================================================
-     8. HISTORY
-     ============================================================ */
-  .history-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-  }
-  .filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
-  .filter-pills button {
-    border: 1px solid var(--border);
-    background: var(--bg-elevated);
-    color: var(--text-muted);
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-family: inherit;
-    font-size: 0.76rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .filter-pills button.active {
-    background: var(--navy);
-    color: #fff;
-    border-color: var(--navy);
-  }
-  .filter-pills button:focus-visible {
-    outline: 2px solid var(--navy-soft);
-    outline-offset: 2px;
-  }
-
-  table.history-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-  table.history-table th {
-    text-align: left;
-    font-size: 0.72rem;
-    color: var(--text-faint);
-    font-weight: 600;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-sunken);
-  }
-  table.history-table td {
-    padding: 11px 14px;
-    font-size: 0.84rem;
-    border-bottom: 1px solid var(--border);
-  }
-  table.history-table tr:last-child td { border-bottom: none; }
-
-  .tag {
-    display: inline-block;
-    padding: 2px 9px;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 700;
-  }
-  .tag.income { background: rgba(16,185,129,0.14); color: var(--good); }
-  .tag.expense { background: rgba(239,68,68,0.14); color: var(--bad); }
-  .tag.asset { background: rgba(10,36,114,0.12); color: var(--navy-soft); }
-  body.dark .tag.asset { color: #7FA0F5; }
-  .tag.debt { background: rgba(245,158,11,0.15); color: var(--warn); }
-
-  .del-btn {
-    border: none;
-    background: transparent;
-    color: var(--text-faint);
-    cursor: pointer;
-    font-size: 0.95rem;
-    padding: 4px 8px;
-    border-radius: 6px;
-  }
-  .del-btn:hover { color: var(--bad); background: rgba(239,68,68,0.08); }
-  .del-btn:focus-visible { outline: 2px solid var(--bad); outline-offset: 2px; }
-
-  .empty-note {
-    text-align: center;
-    padding: 30px;
-    color: var(--text-faint);
-    font-size: 0.85rem;
-  }
-
-  /* ============================================================
-     9. TOAST & MODAL
-     ============================================================ */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--text);
-    color: var(--bg-elevated);
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: 0.86rem;
-    font-weight: 600;
-    z-index: 200;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: none;
-    max-width: 90vw;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-
-  footer.app-footer {
-    max-width: 1180px;
-    margin: 36px auto 0;
-    padding: 0 20px;
-    color: var(--text-faint);
-    font-size: 0.76rem;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .flash { animation: flashKpi 0.6s ease; }
-  @keyframes flashKpi {
-    0% { transform: scale(1); }
-    30% { transform: scale(1.04); }
-    100% { transform: scale(1); }
-  }
-
-  /* ============================================================
-     10. RESPONSIVE
-     ============================================================ */
-  @media (max-width: 920px) {
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-    .chart-grid { grid-template-columns: 1fr; }
-    .form-grid { grid-template-columns: 1fr; }
-    nav.tabs { display: none; }
-  }
-  @media (max-width: 560px) {
-    header.topbar { padding: 12px 14px; flex-wrap: wrap; }
-    .brand .sub { display: none; }
-    .theme-toggle span:last-child, .install-btn span:last-child { display: none; }
-    main { padding: 18px 12px 0; }
-    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-    .kpi-value { font-size: 1.2rem; }
-    .scenario-grid { grid-template-columns: 1fr; }
-    table.history-table { font-size: 0.76rem; }
-    table.history-table th, table.history-table td { padding: 8px 10px; }
-    .history-toolbar { flex-direction: column; align-items: stretch; }
-  }
-
-  .mobile-nav {
-    display: none;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: var(--bg-elevated);
-    border-top: 1px solid var(--border);
-    padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
-    z-index: 60;
-    justify-content: space-around;
-  }
-  .mobile-nav button {
-    flex: 1;
-    border: none;
-    background: transparent;
-    color: var(--text-faint);
-    font-family: inherit;
-    font-size: 0.68rem;
-    font-weight: 600;
-    padding: 6px 2px;
-    cursor: pointer;
-    border-radius: 8px;
-  }
-  .mobile-nav button.active {
-    color: #fff;
-    background: var(--navy);
-  }
-  @media (max-width: 920px) {
-    .mobile-nav { display: flex; }
-    body { padding-bottom: 70px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
+  :root{--navy:#0A2472;--navy-soft:#17348f;--good:#10B981;--bad:#EF4444;--warn:#F59E0B;--bg:#F8FAFC;--bg-elevated:#FFF;--bg-sunken:#EEF1F6;--border:#E1E7F0;--text:#101828;--text-muted:#5B6579;--text-faint:#6B7280;--shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05);--radius:14px}
+  body.dark{--navy:#1E3A8A;--navy-soft:#3B5BDB;--bg:#111827;--bg-elevated:#182234;--bg-sunken:#0D1420;--border:#2A3547;--text:#EDF1F7;--text-muted:#9BA6BC;--text-faint:#8B95A8;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;padding-bottom:60px;font-variant-numeric:tabular-nums}
+  .card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .btn{border:none;background:var(--navy);color:#fff;padding:10px 18px;border-radius:9px;font-family:inherit;font-weight:600;font-size:.84rem;cursor:pointer;transition:background .2s}
+  .btn:hover{background:var(--navy-soft)}
+  .btn.full{width:100%;margin-top:4px}
+  .btn.ghost{background:transparent;color:var(--bad);border:1px solid var(--border)}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:.76rem;font-weight:600;color:var(--text-muted);margin-bottom:5px}
+  .field input,.field select{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--bg-sunken);color:var(--text);font-family:inherit;font-size:.86rem}
+  .field input:focus,.field select:focus{outline:2px solid var(--navy-soft);outline-offset:1px}
+  #authScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#0A2472,#17348f);display:flex;align-items:center;justify-content:center;padding:24px}
+  #authScreen.hidden{display:none}
+  .auth-box{background:#fff;border-radius:20px;padding:32px 26px;max-width:400px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.4);text-align:center}
+  body.dark .auth-box{background:#182234;color:#EDF1F7}
+  .auth-logo{width:70px;height:70px;margin:0 auto 16px;background:linear-gradient(135deg,#0A2472,#17348f);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:34px;color:#fff}
+  .auth-box h2{margin:0 0 4px;font-size:1.25rem;color:#101828}
+  body.dark .auth-box h2{color:#EDF1F7}
+  .auth-box p.sub{margin:0 0 18px;font-size:.86rem;color:#5B6579}
+  body.dark .auth-box p.sub{color:#9BA6BC}
+  .auth-input{width:100%;padding:11px 13px;font-size:.9rem;font-family:inherit;border:2px solid #E1E7F0;border-radius:10px;background:#F8FAFC;color:#101828;margin-bottom:9px}
+  body.dark .auth-input{background:#0D1420;border-color:#2A3547;color:#EDF1F7}
+  .auth-input:focus{outline:none;border-color:#3B5BDB;background:#fff}
+  .auth-error{color:#EF4444;font-size:.8rem;min-height:18px;margin:4px 0;font-weight:600}
+  .auth-toggle-link{margin-top:12px;font-size:.82rem}
+  .auth-toggle-link a{color:#0A2472;font-weight:600;text-decoration:none}
+  body.dark .auth-toggle-link a{color:#7FA0F5}
+  header.topbar{position:sticky;top:0;z-index:50;background:var(--navy);color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .brand .mark{font-weight:700;font-size:1.05rem}
+  nav.tabs{display:flex;gap:4px;background:rgba(255,255,255,.08);padding:4px;border-radius:999px}
+  nav.tabs button{border:none;background:transparent;color:rgba(255,255,255,.75);padding:7px 12px;border-radius:999px;font-family:inherit;font-weight:600;font-size:.78rem;cursor:pointer}
+  nav.tabs button.active{background:#fff;color:var(--navy)}
+  .header-actions{display:flex;gap:6px}
+  .icon-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center}
+  main{max-width:1180px;margin:0 auto;padding:20px 16px 0}
+  .page{display:none}.page.active{display:block}
+  h1.page-title{font-size:1.3rem;font-weight:700;margin:4px 0}
+  p.page-desc{color:var(--text-muted);margin:0 0 16px;font-size:.88rem}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .kpi-card{padding:14px;display:flex;flex-direction:column;gap:4px}
+  .kpi-label{font-size:.66rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+  .kpi-value{font-size:1.2rem;font-weight:700}
+  .kpi-value.good{color:var(--good)}.kpi-value.bad{color:var(--bad)}
+  .kpi-sub{font-size:.68rem;color:var(--text-faint)}
+  .chart-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;margin-bottom:16px}
+  .chart-card{padding:14px 16px 8px}
+  .chart-card h3{margin:0 0 2px;font-size:.88rem}
+  .chart-card .hint{margin:0 0 8px;font-size:.68rem;color:var(--text-faint)}
+  .chart-wrap{position:relative;height:220px}
+  .narrative-card{padding:16px;display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
+  .narrative-icon{flex-shrink:0;width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--navy),var(--navy-soft));display:flex;align-items:center;justify-content:center;color:#fff}
+  .narrative-card p{margin:0;font-size:.86rem;line-height:1.55;color:var(--text-muted)}
+  .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .form-card{padding:16px}
+  .form-card h3{margin:0 0 3px;font-size:.9rem}
+  .form-card .form-hint{margin:0 0 10px;font-size:.72rem;color:var(--text-faint)}
+  .filter-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .filter-pills button{border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-muted);padding:5px 11px;border-radius:999px;font-size:.72rem;font-weight:600;cursor:pointer}
+  .filter-pills button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  table.history-table{width:100%;border-collapse:collapse;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  table.history-table th{text-align:left;font-size:.68rem;color:var(--text-faint);font-weight:600;padding:9px 11px;background:var(--bg-sunken)}
+  table.history-table td{padding:9px 11px;font-size:.8rem;border-bottom:1px solid var(--border)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.66rem;font-weight:700}
+  .tag.income{background:rgba(16,185,129,.14);color:var(--good)}
+  .tag.expense{background:rgba(239,68,68,.14);color:var(--bad)}
+  .tag.asset{background:rgba(10,36,114,.12);color:var(--navy-soft)}
+  .tag.debt{background:rgba(245,158,11,.15);color:var(--warn)}
+  .del-btn{border:none;background:transparent;color:var(--text-faint);cursor:pointer;padding:4px 8px}
+  .del-btn:hover{color:var(--bad)}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--text);color:var(--bg-elevated);padding:10px 16px;border-radius:10px;font-size:.82rem;font-weight:600;z-index:200;transition:transform .35s;pointer-events:none;max-width:90vw}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .wm-badge{position:fixed;bottom:12px;right:12px;background:linear-gradient(135deg,rgba(10,36,114,.92),rgba(23,52,143,.92));color:#fff;padding:6px 12px;border-radius:999px;font-size:.66rem;font-weight:600;box-shadow:0 4px 16px rgba(10,36,114,.35);z-index:55;display:inline-flex;align-items:center;gap:6px;text-decoration:none;opacity:.92}
+  .wm-dot{width:6px;height:6px;border-radius:50%;background:#10B981;box-shadow:0 0 8px #10B981;animation:wmPulse 2s infinite}
+  @keyframes wmPulse{0%,100%{opacity:1}50%{opacity:.5}}
+  footer.app-footer{max-width:1180px;margin:32px auto 0;padding:0 16px 28px;color:var(--text-faint);font-size:.74rem;text-align:center;line-height:1.7}
+  footer .dev-line b{background:linear-gradient(135deg,var(--navy),var(--navy-soft));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
+  body.dark footer .dev-line b{background:linear-gradient(135deg,#7FA0F5,#3B5BDB);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  footer a{color:var(--navy-soft);text-decoration:none;font-weight:600}
+  .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg-elevated);border-top:1px solid var(--border);padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:60;justify-content:space-around}
+  .mobile-nav button{flex:1;border:none;background:transparent;color:var(--text-faint);font-family:inherit;font-size:.64rem;font-weight:600;padding:6px 2px;cursor:pointer;border-radius:8px}
+  .mobile-nav button.active{color:#fff;background:var(--navy)}
+  @media(max-width:920px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.chart-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}nav.tabs{display:none}.mobile-nav{display:flex}body{padding-bottom:70px}.wm-badge{bottom:82px}}
 </style>
 </head>
 <body>
 
-<!-- ============================================================
-     HEADER
-     ============================================================ -->
-<header class="topbar" id="topbar">
-  <div class="brand">
-    <span class="mark">Ramani ya Kifedha</span>
-    <span class="sub">UDSM &middot; Mfumo Binafsi</span>
+<div id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">💰</div>
+    <h2 id="authTitle">Ingia</h2>
+    <p class="sub" id="authSub">Ingia kwenye akaunti yako</p>
+    <div id="signupFields" style="display:none">
+      <input type="text" class="auth-input" id="authName" placeholder="Jina lako kamili">
+      <input type="tel" class="auth-input" id="authPhone" placeholder="Namba ya simu (+255...)">
+    </div>
+    <input type="email" class="auth-input" id="authEmail" placeholder="Barua pepe" autocomplete="email">
+    <input type="password" class="auth-input" id="authPassword" placeholder="Neno la siri (6+)" autocomplete="current-password">
+    <p class="auth-error" id="authError"></p>
+    <button class="btn full" id="authSubmit" type="button">Ingia</button>
+    <p class="auth-toggle-link"><a href="#" id="authToggle">Huna akaunti? Jisajili</a></p>
   </div>
-  <nav class="tabs" id="desktopTabs">
+</div>
+
+<div id="appRoot" style="display:none">
+  <header class="topbar">
+    <div class="brand"><span class="mark">Ramani ya Kifedha</span></div>
+    <nav class="tabs" id="desktopTabs">
+      <button data-page="dashboard" class="active">Dashibodi</button>
+      <button data-page="input">Ingiza</button>
+      <button data-page="history">Historia</button>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggle" title="Theme">🌙</button>
+      <button class="icon-btn" id="signOutBtn" title="Toka">🚪</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="page active" id="page-dashboard">
+      <h1 class="page-title">Muhtasari wa Fedha Zako</h1>
+      <p class="page-desc">Mtazamo wa haraka wa kipato, matumizi na mali.</p>
+      <div class="kpi-grid">
+        <div class="card kpi-card"><span class="kpi-label">Net Worth</span><span class="kpi-value" id="kpiNetWorth">0</span><span class="kpi-sub" id="kpiNetWorthSub">—</span></div>
+        <div class="card kpi-card"><span class="kpi-label">Kipato cha Mwezi</span><span class="kpi-value" id="kpiIncome">0</span><span class="kpi-sub" id="kpiIncomeSub">—</span></div>
+        <div class="card kpi-card"><span class="kpi-label">Matumizi ya Mwezi</span><span class="kpi-value" id="kpiExpense">0</span><span class="kpi-sub" id="kpiExpenseSub">—</span></div>
+        <div class="card kpi-card"><span class="kpi-label">Akiba ya Mwezi</span><span class="kpi-value" id="kpiSavings">0</span><span class="kpi-sub" id="kpiSavingsSub">—</span></div>
+      </div>
+      <div class="chart-grid">
+        <div class="card chart-card"><h3>Mwelekeo wa Net Worth</h3><p class="hint">Historia + makadirio ya Monte Carlo</p><div class="chart-wrap"><canvas id="netWorthChart"></canvas></div></div>
+        <div class="card chart-card"><h3>Mgawanyo wa Matumizi</h3><p class="hint">Mwezi huu</p><div class="chart-wrap"><canvas id="expenseDonut"></canvas></div></div>
+      </div>
+      <div class="card narrative-card">
+        <div class="narrative-icon">💡</div>
+        <div><h3 style="margin:0 0 4px;font-size:.88rem">Simulizi</h3><p id="narrativeText">Inachambua…</p></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-input">
+      <h1 class="page-title">Ingiza Data Yako</h1>
+      <p class="page-desc">Ongeza kipato, matumizi, mali, madeni na malengo.</p>
+      <div class="form-grid">
+        <form class="card form-card" id="formIncome">
+          <h3>💰 Kipato</h3><p class="form-hint">Rekodi chanzo cha kipato</p>
+          <div class="field"><label>Chanzo</label><input type="text" id="incomeSource" placeholder="Mshahara, biashara..." required></div>
+          <div class="field"><label>Kiasi (Tsh)</label><input type="number" id="incomeAmount" min="0" required></div>
+          <div class="field"><label>Tarehe</label><input type="date" id="incomeDate" required></div>
+          <button type="submit" class="btn full">Ongeza Kipato</button>
+        </form>
+        <form class="card form-card" id="formExpense">
+          <h3>🛒 Matumizi</h3><p class="form-hint">Rekodi matumizi</p>
+          <div class="field"><label>Kategoria</label><select id="expenseCategory" required>
+            <option>Chakula</option><option>Kodi</option><option>Usafiri</option><option>Burudani</option><option>Elimu</option><option>Afya</option><option>Mengineyo</option>
+          </select></div>
+          <div class="field"><label>Kiasi (Tsh)</label><input type="number" id="expenseAmount" min="0" required></div>
+          <div class="field"><label>Tarehe</label><input type="date" id="expenseDate" required></div>
+          <button type="submit" class="btn full">Ongeza Matumizi</button>
+        </form>
+        <form class="card form-card" id="formAsset">
+          <h3>🏦 Mali</h3><p class="form-hint">Vitu vyenye thamani</p>
+          <div class="field"><label>Jina</label><input type="text" id="assetName" placeholder="Akiba benki, Pikipiki" required></div>
+          <div class="field"><label>Thamani (Tsh)</label><input type="number" id="assetValue" min="0" required></div>
+          <button type="submit" class="btn full">Ongeza Mali</button>
+        </form>
+        <form class="card form-card" id="formDebt">
+          <h3>📋 Deni</h3><p class="form-hint">Madeni au mikopo</p>
+          <div class="field"><label>Jina</label><input type="text" id="debtName" placeholder="Mkopo wa masomo" required></div>
+          <div class="field"><label>Kiasi (Tsh)</label><input type="number" id="debtAmount" min="0" required></div>
+          <button type="submit" class="btn full">Ongeza Deni</button>
+        </form>
+        <form class="card form-card" id="formGoal" style="grid-column:1/-1">
+          <h3>🎯 Lengo la Maisha</h3><p class="form-hint">Mfano: "Nataka kuweka akiba Tsh 10,000,000"</p>
+          <div class="field"><label>Maelezo</label><input type="text" id="goalText" placeholder="Andika lengo lako" required></div>
+          <button type="submit" class="btn full">Ongeza Lengo</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="page" id="page-history">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+        <div><h1 class="page-title" style="margin-bottom:2px">Historia</h1><p class="page-desc" style="margin-bottom:0">Rekodi zote</p></div>
+        <button class="btn ghost" id="resetAllBtn">Futa Zote</button>
+      </div>
+      <div class="filter-pills">
+        <button data-filter="all" class="active">Zote</button>
+        <button data-filter="income">Kipato</button>
+        <button data-filter="expense">Matumizi</button>
+        <button data-filter="asset">Mali</button>
+        <button data-filter="debt">Madeni</button>
+      </div>
+      <table class="history-table">
+        <thead><tr><th>Tarehe</th><th>Aina</th><th>Maelezo</th><th>Kiasi</th><th></th></tr></thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <div id="emptyNote" style="display:none;text-align:center;padding:30px;color:var(--text-faint)">Hakuna rekodi bado.</div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="dev-line">Imetengenezwa na <b>Mr. Buhalata</b></div>
+    <div>📞 <a href="tel:+255615269169">+255 615 269 169</a></div>
+    <div>© 2025 Ramani ya Kifedha</div>
+  </footer>
+
+  <a class="wm-badge" href="tel:+255615269169"><span class="wm-dot"></span>Dev: Buhalata</a>
+
+  <div class="mobile-nav" id="mobileTabs">
     <button data-page="dashboard" class="active">Dashibodi</button>
-    <button data-page="input">Ingiza Data</button>
-    <button data-page="trajectory">Mwelekeo</button>
+    <button data-page="input">Ingiza</button>
     <button data-page="history">Historia</button>
-  </nav>
-  <div class="header-actions">
-    <button class="install-btn" id="installBtn">
-      <span>&#128242;</span>
-      <span>Install</span>
-    </button>
-    <button class="theme-toggle" id="themeToggle">
-      <span id="themeIcon">&#9789;</span>
-      <span id="themeLabel">Dark Mode</span>
-    </button>
   </div>
-</header>
-
-<main>
-
-  <!-- ============================================================
-       PAGE: DASHBOARD
-       ============================================================ -->
-  <section class="page active" id="page-dashboard">
-    <h1 class="page-title">Muhtasari wa Fedha Zako</h1>
-    <p class="page-desc">Mtazamo wa haraka wa hali yako ya kipato, matumizi na mali kwa mwezi huu.</p>
-
-    <div class="kpi-grid">
-      <div class="card kpi-card">
-        <span class="kpi-label">Net Worth</span>
-        <span class="kpi-value" id="kpiNetWorth">0</span>
-        <span class="kpi-sub" id="kpiNetWorthSub">&mdash;</span>
-      </div>
-      <div class="card kpi-card">
-        <span class="kpi-label">Kipato cha Mwezi</span>
-        <span class="kpi-value" id="kpiIncome">0</span>
-        <span class="kpi-sub" id="kpiIncomeSub">&mdash;</span>
-      </div>
-      <div class="card kpi-card">
-        <span class="kpi-label">Matumizi ya Mwezi</span>
-        <span class="kpi-value" id="kpiExpense">0</span>
-        <span class="kpi-sub" id="kpiExpenseSub">&mdash;</span>
-      </div>
-      <div class="card kpi-card">
-        <span class="kpi-label">Akiba ya Mwezi</span>
-        <span class="kpi-value" id="kpiSavings">0</span>
-        <span class="kpi-sub" id="kpiSavingsSub">&mdash;</span>
-      </div>
-    </div>
-
-    <div class="chart-grid">
-      <div class="card chart-card">
-        <h3>Mwelekeo wa Net Worth</h3>
-        <p class="hint">Miezi 12 ya historia &middot; miezi 60 ya makadirio (Monte Carlo)</p>
-        <div class="chart-wrap"><canvas id="netWorthChart"></canvas></div>
-      </div>
-      <div class="card chart-card">
-        <h3>Mgawanyo wa Matumizi</h3>
-        <p class="hint">Bonyeza sehemu ya chati kuona kiasi halisi</p>
-        <div class="chart-wrap"><canvas id="expenseDonut"></canvas></div>
-        <div class="donut-click-info" id="donutInfo">Bonyeza sehemu ya rangi hapo juu&hellip;</div>
-      </div>
-    </div>
-
-    <div class="card narrative-card">
-      <div class="narrative-icon">&#128161;</div>
-      <div>
-        <h3>Simulizi ya Mfumo</h3>
-        <p id="narrativeText">Inachambua data yako&hellip;</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       PAGE: INPUT
-       ============================================================ -->
-  <section class="page" id="page-input">
-    <h1 class="page-title">Ingiza Data Yako</h1>
-    <p class="page-desc">Ongeza kipato, matumizi, mali, madeni na malengo. Data yote inahifadhiwa kwenye kivinjari chako pekee.</p>
-
-    <div class="form-grid">
-      <form class="card form-card" id="formIncome">
-        <h3>&#128176; Kipato</h3>
-        <p class="form-hint">Rekodi chanzo cha kipato chako</p>
-        <div class="field">
-          <label for="incomeSource">Chanzo cha kipato</label>
-          <input type="text" id="incomeSource" placeholder="Mfano: Mshahara, Biashara ndogo" required>
-        </div>
-        <div class="field">
-          <label for="incomeAmount">Kiasi (Tsh)</label>
-          <input type="number" id="incomeAmount" min="0" step="1" placeholder="0" required>
-        </div>
-        <div class="field">
-          <label for="incomeDate">Tarehe</label>
-          <input type="date" id="incomeDate" required>
-        </div>
-        <button type="submit" class="btn full">Ongeza Kipato</button>
-      </form>
-
-      <form class="card form-card" id="formExpense">
-        <h3>&#128722; Matumizi</h3>
-        <p class="form-hint">Rekodi matumizi kwa kategoria</p>
-        <div class="field">
-          <label for="expenseCategory">Kategoria</label>
-          <select id="expenseCategory" required>
-            <option value="Chakula">Chakula</option>
-            <option value="Kodi">Kodi</option>
-            <option value="Usafiri">Usafiri</option>
-            <option value="Burudani">Burudani</option>
-            <option value="Elimu">Elimu</option>
-            <option value="Afya">Afya</option>
-            <option value="Mengineyo">Mengineyo</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="expenseAmount">Kiasi (Tsh)</label>
-          <input type="number" id="expenseAmount" min="0" step="1" placeholder="0" required>
-        </div>
-        <div class="field">
-          <label for="expenseDate">Tarehe</label>
-          <input type="date" id="expenseDate" required>
-        </div>
-        <button type="submit" class="btn full">Ongeza Matumizi</button>
-      </form>
-
-      <form class="card form-card" id="formAsset">
-        <h3>&#127974; Mali</h3>
-        <p class="form-hint">Vitu vyenye thamani unavyomiliki</p>
-        <div class="field">
-          <label for="assetName">Jina la mali</label>
-          <input type="text" id="assetName" placeholder="Mfano: Akiba benki, Pikipiki" required>
-        </div>
-        <div class="field">
-          <label for="assetValue">Thamani (Tsh)</label>
-          <input type="number" id="assetValue" min="0" step="1" placeholder="0" required>
-        </div>
-        <button type="submit" class="btn full">Ongeza Mali</button>
-      </form>
-
-      <form class="card form-card" id="formDebt">
-        <h3>&#128203; Deni</h3>
-        <p class="form-hint">Madeni au mikopo unayodaiwa</p>
-        <div class="field">
-          <label for="debtName">Jina la deni</label>
-          <input type="text" id="debtName" placeholder="Mfano: Mkopo wa masomo" required>
-        </div>
-        <div class="field">
-          <label for="debtAmount">Kiasi (Tsh)</label>
-          <input type="number" id="debtAmount" min="0" step="1" placeholder="0" required>
-        </div>
-        <div class="field">
-          <label for="debtRate">Riba kwa mwaka (%) &mdash; si lazima</label>
-          <input type="number" id="debtRate" min="0" step="0.1" placeholder="0">
-        </div>
-        <button type="submit" class="btn full">Ongeza Deni</button>
-      </form>
-
-      <form class="card form-card" id="formGoal" style="grid-column: 1 / -1;">
-        <h3>&#127919; Lengo la Maisha</h3>
-        <p class="form-hint">Mfano: "Nataka kuweka akiba Tsh 10,000,000 ndani ya miaka 5"</p>
-        <div class="field">
-          <label for="goalText">Maelezo ya lengo</label>
-          <input type="text" id="goalText" placeholder="Andika lengo lako hapa" required>
-        </div>
-        <button type="submit" class="btn full">Ongeza Lengo</button>
-      </form>
-    </div>
-
-    <div style="margin-top: 20px;">
-      <h3 style="font-size: 0.94rem; margin-bottom: 10px;">Malengo Yako</h3>
-      <div class="goal-list" id="goalList"></div>
-    </div>
-
-    <div class="card" style="padding: 18px 20px; margin-top: 20px;">
-      <h3 style="margin: 0 0 4px; font-size: 0.94rem;">&#128190; Backup ya Data</h3>
-      <p style="font-size: 0.78rem; color: var(--text-faint); margin: 0 0 12px;">
-        Pakua data yako kama faili la JSON kwa usalama. Unaweza kuipakia tena kwenye kifaa kingine.
-      </p>
-      <div class="btn-row">
-        <button class="btn" id="exportBtn">&#11015; Pakua Backup</button>
-        <button class="btn ghost" id="importBtn" style="color: var(--navy-soft); border-color: var(--border);">&#11014; Pakia Backup</button>
-        <input type="file" id="importFile" accept="application/json" style="display:none;">
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       PAGE: TRAJECTORY
-       ============================================================ -->
-  <section class="page" id="page-trajectory">
-    <h1 class="page-title">Ramani ya Maisha Yako</h1>
-    <p class="page-desc">Kundi lako la kifedha kwa sasa, na mahali unapoelekea kwa mwenendo wa sasa.</p>
-
-    <div class="card category-card" id="categoryCard">
-      <div class="category-badge" id="categoryBadge">&#9679; Inapima&hellip;</div>
-      <p id="categoryDesc">Inachambua tabia yako ya kifedha&hellip;</p>
-      <div class="category-advice" id="categoryAdvice"></div>
-    </div>
-
-    <div class="card projection-card">
-      <h3>Makadirio ya Miaka 5 Ijayo</h3>
-      <p class="hint" style="margin:0; color: var(--text-faint); font-size:0.78rem;">
-        Kwa kuzingatia mwenendo wa miezi 12 iliyopita (Holt + Monte Carlo, njia 500)
-      </p>
-      <div class="projection-big" id="projectionBig">Tsh 0</div>
-      <div class="scenario-grid">
-        <div class="scenario-item p10">
-          <div class="label">Uhafifu (P10)</div>
-          <div class="amount" id="scenarioP10">Tsh 0</div>
-        </div>
-        <div class="scenario-item p50">
-          <div class="label">Wastani (P50)</div>
-          <div class="amount" id="scenarioP50">Tsh 0</div>
-        </div>
-        <div class="scenario-item p90">
-          <div class="label">Tumaini (P90)</div>
-          <div class="amount" id="scenarioP90">Tsh 0</div>
-        </div>
-      </div>
-      <div id="regimeBadge"></div>
-      <p id="projectionNote" style="font-size:0.82rem; color:var(--text-muted); margin:10px 0 0;"></p>
-    </div>
-
-    <div class="card" style="padding: 18px 20px;">
-      <h3 style="margin:0 0 4px; font-size:0.94rem;">Makundi Manne ya Mwelekeo</h3>
-      <p style="font-size:0.78rem; color:var(--text-faint); margin:0 0 12px;">
-        Mfumo unakupanga kila mwezi katika mojawapo ya makundi haya
-      </p>
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
-        <div class="category-advice">&#128994; <b>Accumulator</b> &mdash; Net Worth inakua zaidi ya 10% kila mwezi</div>
-        <div class="category-advice">&#128993; <b>Balancer</b> &mdash; Kipato na matumizi vinaendana</div>
-        <div class="category-advice">&#128992; <b>Debt Prone</b> &mdash; Matumizi yanazidi kipato kidogo</div>
-        <div class="category-advice">&#128308; <b>Depleter</b> &mdash; Matumizi yanazidi kipato sana</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       PAGE: HISTORY
-       ============================================================ -->
-  <section class="page" id="page-history">
-    <div class="history-toolbar">
-      <div>
-        <h1 class="page-title" style="margin-bottom:2px;">Historia ya Kumbukumbu</h1>
-        <p class="page-desc" style="margin-bottom:0;">Vipengele vyote ulivyoingiza, kwa mpangilio wa tarehe</p>
-      </div>
-      <button class="btn ghost" id="resetAllBtn">Futa Zote</button>
-    </div>
-
-    <div class="filter-pills" style="margin-bottom:14px;">
-      <button data-filter="all" class="active">Zote</button>
-      <button data-filter="income">Kipato</button>
-      <button data-filter="expense">Matumizi</button>
-      <button data-filter="asset">Mali</button>
-      <button data-filter="debt">Madeni</button>
-    </div>
-
-    <table class="history-table">
-      <thead>
-        <tr>
-          <th>Tarehe</th>
-          <th>Aina</th>
-          <th>Maelezo</th>
-          <th>Kiasi (Tsh)</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="historyBody"></tbody>
-    </table>
-    <div class="empty-note" id="emptyNote" style="display:none;">Hakuna kumbukumbu bado. Nenda "Ingiza Data" kuanza.</div>
-  </section>
-
-</main>
-
-<footer class="app-footer">
-  <span>Ramani ya Kifedha &mdash; data yako iko kwenye kifaa chako pekee</span>
-  <span id="entryCount">rekodi 0</span>
-</footer>
-
-<div class="mobile-nav" id="mobileTabs">
-  <button data-page="dashboard" class="active">Dashibodi</button>
-  <button data-page="input">Ingiza</button>
-  <button data-page="trajectory">Mwelekeo</button>
-  <button data-page="history">Historia</button>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 /* ============================================================
-   1. HELPERS
+   SUPABASE CONFIG — credentials zako
    ============================================================ */
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
+const SUPABASE_URL = 'https://sldbrodqqshydbsigmjv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9BUJLU9ynkG7cSMu5Etx_Q_-sMpPnmR';
 
-function toDateStr(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
+const { createClient } = window.supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true }
+});
 
-function toMonthKey(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
-
-function todayStr() { return toDateStr(new Date()); }
-function currentMonthKey() { return toMonthKey(new Date()); }
-
-function esc(s) {
-  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
-}
-
-function fmt(n) {
-  const v = Number(n) || 0;
-  const sign = v < 0 ? '-' : '';
-  return sign + 'Tsh ' + Math.abs(Math.round(v)).toLocaleString('en-US');
-}
-
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const currentMonthKey = () => new Date().toISOString().slice(0, 7);
+const monthKey = (d) => (d || '').slice(0, 7);
+const fmt = (n) => { const v = Number(n) || 0; return (v < 0 ? '-' : '') + 'Tsh ' + Math.abs(Math.round(v)).toLocaleString('en-US'); };
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function showToast(msg, ms = 2400) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -959,1096 +255,463 @@ function showToast(msg, ms = 2400) {
 }
 
 /* ============================================================
-   2. STORAGE LAYER
+   STATE
    ============================================================ */
-const STORAGE_KEY = 'wealthTrajectorySystem_v2';
-
-function buildSampleData() {
-  const today = new Date();
-  const income = [];
-  const expense = [];
-
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(today.getFullYear(), today.getMonth() - i, 5);
-    income.push({
-      id: uid(),
-      source: 'Mshahara / Ajira',
-      amount: 450000 + Math.round(Math.random() * 80000),
-      date: toDateStr(d)
-    });
-
-    const categories = ['Chakula', 'Kodi', 'Usafiri', 'Burudani', 'Elimu', 'Afya'];
-    const baseAmounts = { Chakula: 150000, Kodi: 120000, Usafiri: 45000, Burudani: 30000, Elimu: 40000, Afya: 20000 };
-    categories.forEach(cat => {
-      const d2 = new Date(today.getFullYear(), today.getMonth() - i, 10 + Math.floor(Math.random() * 10));
-      expense.push({
-        id: uid(),
-        category: cat,
-        amount: Math.round(baseAmounts[cat] * (0.8 + Math.random() * 0.4)),
-        date: toDateStr(d2)
-      });
-    });
-  }
-
-  return {
-    income,
-    expense,
-    asset: [
-      { id: uid(), name: 'Akiba Benki (NMB)', value: 620000, date: toDateStr(today) },
-      { id: uid(), name: 'Simu ya Mkononi', value: 350000, date: toDateStr(today) },
-      { id: uid(), name: 'Pikipiki', value: 1800000, date: toDateStr(today) }
-    ],
-    debt: [
-      { id: uid(), name: 'Mkopo wa Elimu', amount: 900000, interest_rate: 0, date: toDateStr(today) },
-      { id: uid(), name: 'Deni la Rafiki', amount: 50000, interest_rate: 0, date: toDateStr(today) }
-    ],
-    goal: [
-      { id: uid(), text: 'Nataka kuweka akiba Tsh 10,000,000 ndani ya miaka 5', date: toDateStr(today) },
-      { id: uid(), text: 'Nataka kununua laptop mpya ndani ya miezi 8', date: toDateStr(today) }
-    ],
-    theme: 'light'
-  };
-}
-
-function loadData() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw);
-      // Validate shape
-      if (parsed && typeof parsed === 'object' && Array.isArray(parsed.income)) return parsed;
-    } catch (e) { /* fall through */ }
-  }
-  const sample = buildSampleData();
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(sample)); } catch (e) {}
-  return sample;
-}
-
-function saveData() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
-  } catch (e) {
-    console.warn('saveData failed:', e);
-    showToast('⚠️ Tatizo la kuhifadhi data');
-  }
-}
-
-let DATA = loadData();
+let DATA = { income: [], expense: [], asset: [], debt: [], goal: [], theme: localStorage.getItem('theme') || 'light' };
+let currentUser = null;
+let historyFilter = 'all';
+let nwChart = null, donutChart = null;
 
 /* ============================================================
-   3. DERIVED CALCULATIONS
+   SUPABASE OPERATIONS
    ============================================================ */
-function totalAssets() {
-  return DATA.asset.reduce((s, a) => s + (Number(a.value) || 0), 0);
-}
-function totalDebts() {
-  return DATA.debt.reduce((s, d) => s + (Number(d.amount) || 0), 0);
-}
-function netWorth() {
-  return totalAssets() - totalDebts();
-}
-
-function monthKey(dateStr) {
-  return (dateStr || '').slice(0, 7);
-}
-
-function sumForMonth(list, amountField, mKey) {
-  return list
-    .filter(x => monthKey(x.date) === mKey)
-    .reduce((s, x) => s + (Number(x[amountField]) || 0), 0);
+async function loadAll() {
+  const [inc, exp, ast, dbt, gl] = await Promise.all([
+    db.from('income').select('*').order('date', { ascending: false }),
+    db.from('expense').select('*').order('date', { ascending: false }),
+    db.from('asset').select('*').order('date', { ascending: false }),
+    db.from('debt').select('*').order('date', { ascending: false }),
+    db.from('goal').select('*').order('date', { ascending: false })
+  ]);
+  if (inc.error) throw inc.error;
+  DATA.income = inc.data || [];
+  DATA.expense = exp.data || [];
+  DATA.asset = ast.data || [];
+  DATA.debt = dbt.data || [];
+  DATA.goal = gl.data || [];
 }
 
-function monthlyIncome(mKey) { return sumForMonth(DATA.income, 'amount', mKey); }
-function monthlyExpense(mKey) { return sumForMonth(DATA.expense, 'amount', mKey); }
+async function dbAdd(table, record) {
+  const payload = { ...record, user_id: currentUser.id };
+  const { data, error } = await db.from(table).insert([payload]).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function dbDelete(table, id) {
+  const { error } = await db.from(table).delete().eq('id', id);
+  if (error) throw error;
+}
+
+async function dbClearAll() {
+  const uid = currentUser.id;
+  await Promise.all([
+    db.from('income').delete().eq('user_id', uid),
+    db.from('expense').delete().eq('user_id', uid),
+    db.from('asset').delete().eq('user_id', uid),
+    db.from('debt').delete().eq('user_id', uid),
+    db.from('goal').delete().eq('user_id', uid)
+  ]);
+}
+
+/* ============================================================
+   CALCULATIONS
+   ============================================================ */
+const totalAssets = () => DATA.asset.reduce((s, a) => s + Number(a.value || 0), 0);
+const totalDebts = () => DATA.debt.reduce((s, d) => s + Number(d.amount || 0), 0);
+const netWorth = () => totalAssets() - totalDebts();
+
+const monthlyIncome = (m) => DATA.income.filter(x => monthKey(x.date) === m).reduce((s, x) => s + Number(x.amount || 0), 0);
+const monthlyExpense = (m) => DATA.expense.filter(x => monthKey(x.date) === m).reduce((s, x) => s + Number(x.amount || 0), 0);
+
+function expenseBreakdown(m) {
+  const by = {};
+  DATA.expense.filter(e => monthKey(e.date) === m).forEach(e => {
+    by[e.category] = (by[e.category] || 0) + Number(e.amount || 0);
+  });
+  return by;
+}
 
 function buildNetWorthHistory() {
   const months = [];
   const today = new Date();
   for (let i = 11; i >= 0; i--) {
     const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-    months.push(toMonthKey(d));
+    months.push(d.toISOString().slice(0, 7));
   }
-  const netSavingsByMonth = months.map(m => monthlyIncome(m) - monthlyExpense(m));
-  const totalNetSavings = netSavingsByMonth.reduce((a, b) => a + b, 0);
-  const currentNW = netWorth();
-  const startingNW = currentNW - totalNetSavings;
-
-  const history = [];
-  let running = startingNW;
-  netSavingsByMonth.forEach((savings, idx) => {
-    running += savings;
-    history.push({ month: months[idx], value: running });
-  });
-  return history;
-}
-
-function expenseBreakdown(mKey) {
-  const byCat = {};
-  DATA.expense
-    .filter(e => monthKey(e.date) === mKey)
-    .forEach(e => {
-      byCat[e.category] = (byCat[e.category] || 0) + (Number(e.amount) || 0);
-    });
-  return byCat;
+  const savings = months.map(m => monthlyIncome(m) - monthlyExpense(m));
+  const totalNet = savings.reduce((a, b) => a + b, 0);
+  let running = netWorth() - totalNet;
+  return months.map((m, i) => ({ month: m, value: (running += savings[i]) }));
 }
 
 /* ============================================================
-   4. PREDICTION ENGINE v2
-   Holt's Linear + Seasonality + Monte Carlo
+   PREDICTION — Holt + Monte Carlo
    ============================================================ */
-const PredictionEngine = (() => {
-  const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0;
+const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0;
+const stdev = a => { if (a.length < 2) return 0; const m = mean(a); return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1)); };
+const percentile = (sorted, p) => { const i = (sorted.length - 1) * p; const lo = Math.floor(i), hi = Math.ceil(i); return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo); };
+const gaussian = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
 
-  const stdev = a => {
-    if (a.length < 2) return 0;
-    const m = mean(a);
-    return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1));
-  };
-
-  const percentile = (sorted, p) => {
-    if (!sorted.length) return 0;
-    const idx = (sorted.length - 1) * p;
-    const lo = Math.floor(idx), hi = Math.ceil(idx);
-    if (lo === hi) return sorted[lo];
-    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
-  };
-
-  const gaussian = () => {
-    let u = 0, v = 0;
-    while (u === 0) u = Math.random();
-    while (v === 0) v = Math.random();
-    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-  };
-
-  function holtLinear(values, alpha = 0.45, beta = 0.3) {
-    if (values.length < 2) {
-      const v = values[0] || 0;
-      return { level: v, trend: 0, fitted: [{ level: v, trend: 0 }] };
-    }
-    let level = values[0];
-    let trend = values[1] - values[0];
-    const fitted = [];
-    for (let i = 1; i < values.length; i++) {
-      const prevLevel = level;
-      level = alpha * values[i] + (1 - alpha) * (level + trend);
-      trend = beta * (level - prevLevel) + (1 - beta) * trend;
-      fitted.push({ level, trend });
-    }
-    return { level, trend, fitted };
+function holtLinear(values, alpha = 0.45, beta = 0.3) {
+  if (values.length < 2) return { trend: 0, fitted: [{ level: values[0] || 0, trend: 0 }] };
+  let level = values[0], trend = values[1] - values[0];
+  const fitted = [];
+  for (let i = 1; i < values.length; i++) {
+    const prev = level;
+    level = alpha * values[i] + (1 - alpha) * (level + trend);
+    trend = beta * (level - prev) + (1 - beta) * trend;
+    fitted.push({ level, trend });
   }
-
-  function detectSeasonality(values, monthKeys) {
-    const buckets = Array.from({ length: 12 }, () => []);
-    for (let i = 0; i < values.length; i++) {
-      const m = Number(monthKeys[i].slice(5, 7)) - 1;
-      buckets[m].push(values[i]);
-    }
-    const overall = mean(values) || 1;
-    const factors = buckets.map(arr => arr.length ? (mean(arr) / overall) : 1);
-    const avg = mean(factors) || 1;
-    return factors.map(f => f / avg);
-  }
-
-  function simulate({ start, trend, sigma, seasonal, horizon, paths = 500 }) {
-    const out = [];
-    const damping = 0.98;
-    for (let p = 0; p < paths; p++) {
-      let v = start;
-      let t = trend;
-      const path = [v];
-      for (let h = 1; h <= horizon; h++) {
-        const season = seasonal ? seasonal[(h - 1) % 12] : 1;
-        t *= damping;
-        const shock = gaussian() * sigma;
-        v += t * season + shock;
-        path.push(v);
-      }
-      out.push(path);
-    }
-    return out;
-  }
-
-  function forecastNetWorth(monthlySavings, startNW, monthKeys, horizon = 60) {
-    const values = monthlySavings.length ? monthlySavings.slice() : [0];
-    const { level, trend, fitted } = holtLinear(values);
-
-    const residuals = values.slice(1).map((v, i) =>
-      v - (fitted[i].level + fitted[i].trend)
-    );
-    const sigma = Math.max(
-      stdev(residuals),
-      Math.abs(trend) * 0.3,
-      1
-    );
-
-    const seasonal = (values.length >= 18 && monthKeys)
-      ? detectSeasonality(values, monthKeys)
-      : null;
-
-    const paths = simulate({
-      start: startNW, trend, sigma, seasonal, horizon
-    });
-
-    const bands = { p10: [], p50: [], p90: [] };
-    for (let h = 0; h <= horizon; h++) {
-      const col = paths.map(p => p[h]).sort((a, b) => a - b);
-      bands.p10.push(percentile(col, 0.10));
-      bands.p50.push(percentile(col, 0.50));
-      bands.p90.push(percentile(col, 0.90));
-    }
-
-    const recentAvg = mean(values.slice(-3));
-    const olderAvg = mean(values.slice(0, Math.min(3, values.length)));
-    const acceleration = recentAvg - olderAvg;
-
-    let regime = 'STABLE';
-    if (trend > 0 && acceleration > 0)      regime = 'ACCELERATING_UP';
-    else if (trend > 0 && acceleration < 0) regime = 'GROWING_SLOWER';
-    else if (trend < 0 && acceleration < 0) regime = 'ACCELERATING_DOWN';
-    else if (trend < 0 && acceleration > 0) regime = 'RECOVERING';
-
-    return {
-      bands, level, trend, sigma, seasonal, regime, acceleration,
-      monthlySavingsAvg: mean(values),
-      fiveYear: {
-        pessimistic: bands.p10[horizon],
-        expected:    bands.p50[horizon],
-        optimistic:  bands.p90[horizon]
-      }
-    };
-  }
-
-  return { forecastNetWorth };
-})();
+  return { level, trend, fitted };
+}
 
 function buildForecast(horizon = 60) {
+  const months = [];
   const today = new Date();
-  const monthKeys = [];
   for (let i = 11; i >= 0; i--) {
     const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-    monthKeys.push(toMonthKey(d));
+    months.push(d.toISOString().slice(0, 7));
   }
-  const savings = monthKeys.map(m => monthlyIncome(m) - monthlyExpense(m));
-  return PredictionEngine.forecastNetWorth(savings, netWorth(), monthKeys, horizon);
-}
+  const savings = months.map(m => monthlyIncome(m) - monthlyExpense(m));
+  const { trend, fitted } = holtLinear(savings);
+  const residuals = savings.slice(1).map((v, i) => v - (fitted[i].level + fitted[i].trend));
+  const sigma = Math.max(stdev(residuals), Math.abs(trend) * 0.3, 1);
 
-/* ============================================================
-   5. CLASSIFICATION
-   ============================================================ */
-function classifyUser() {
-  const history = buildNetWorthHistory();
-  const curM = currentMonthKey();
-  const income = monthlyIncome(curM);
-  const expense = monthlyExpense(curM);
-
-  let growthPct = 0;
-  if (history.length >= 2) {
-    const prev = history[history.length - 2].value;
-    const cur = history[history.length - 1].value;
-    if (prev !== 0) growthPct = ((cur - prev) / Math.abs(prev)) * 100;
-  }
-
-  if (growthPct > 10) {
-    return {
-      key: 'accumulator', emoji: '&#128994;', name: 'Accumulator (Mkusanyaji)', color: '#10B981',
-      desc: 'Net Worth yako inakua kwa kasi nzuri — zaidi ya asilimia 10 kwa mwezi. Unajenga msingi imara wa kifedha.',
-      advice: 'Endelea na tabia hii! Fikiria kuwekeza sehemu ya ziada ya akiba yako kwenye fursa zenye faida ya muda mrefu (hisa, ardhi, biashara).'
-    };
-  } else if (expense > income) {
-    const ratio = income > 0 ? expense / income : 2;
-    if (ratio > 1.3) {
-      return {
-        key: 'depleter', emoji: '&#128308;', name: 'Depleter (Mtumbukizi)', color: '#EF4444',
-        desc: 'Matumizi yako yanazidi kipato chako kwa kiasi kikubwa, na hii inaweza kuongeza madeni haraka.',
-        advice: 'Tahadhari! Kagua matumizi yasiyo ya lazima mara moja, punguza gharama za juu (kama burudani), na epuka mikopo mipya.'
-      };
+  const paths = [];
+  for (let p = 0; p < 500; p++) {
+    let v = netWorth(), t = trend;
+    const path = [v];
+    for (let h = 1; h <= horizon; h++) {
+      t *= 0.98;
+      v += t + gaussian() * sigma;
+      path.push(v);
     }
-    return {
-      key: 'debt-prone', emoji: '&#128992;', name: 'Debt Prone (Mlinda Deni)', color: '#F59E0B',
-      desc: 'Matumizi yako yanazidi kipato chako kidogo. Ukiendelea hivi, madeni yanaweza kuongezeka pole pole.',
-      advice: 'Jaribu kupunguza matumizi kwa asilimia 10-15 kwenye kategoria zisizo za lazima ili kurudisha uwiano.'
-    };
-  } else {
-    return {
-      key: 'balancer', emoji: '&#128993;', name: 'Balancer (Mwananchi wa Wastani)', color: '#F59E0B',
-      desc: 'Kipato na matumizi yako vinaendana kwa ujumla, lakini ukuaji wa mali bado ni mdogo.',
-      advice: 'Weka lengo la kuokoa angalau asilimia 10 ya kipato chako kila mwezi ili kuanza kujenga Net Worth kwa kasi zaidi.'
-    };
+    paths.push(path);
   }
+  const bands = { p10: [], p50: [], p90: [] };
+  for (let h = 0; h <= horizon; h++) {
+    const col = paths.map(p => p[h]).sort((a, b) => a - b);
+    bands.p10.push(percentile(col, 0.1));
+    bands.p50.push(percentile(col, 0.5));
+    bands.p90.push(percentile(col, 0.9));
+  }
+  return { bands, trend };
 }
 
 /* ============================================================
-   6. CHARTS
+   CHARTS
    ============================================================ */
-let netWorthChartInstance = null;
-let donutChartInstance = null;
-
-function themeColors() {
+function renderCharts() {
   const dark = DATA.theme === 'dark';
-  return {
+  const tc = {
     grid: dark ? 'rgba(255,255,255,0.06)' : 'rgba(16,24,40,0.06)',
     text: dark ? '#9BA6BC' : '#5B6579',
     line: dark ? '#7FA0F5' : '#0A2472',
-    lineProjection: dark ? '#3D4A63' : '#94A3B8',
-    fillLine: dark ? 'rgba(127,160,245,0.12)' : 'rgba(10,36,114,0.08)'
+    lineProj: dark ? '#3D4A63' : '#94A3B8'
   };
-}
-
-const DONUT_COLORS = ['#0A2472', '#10B981', '#F59E0B', '#EF4444', '#7C3AED', '#06B6D4', '#EC4899'];
-
-function renderCharts() {
-  const tc = themeColors();
   const history = buildNetWorthHistory();
   const forecast = buildForecast(60);
 
-  // X-axis: historia + makadirio
   const futureKeys = [];
-  const lastHistMonth = history[history.length - 1].month;
-  const [ly, lm] = lastHistMonth.split('-').map(Number);
-  for (let i = 1; i <= 60; i++) {
-    const d = new Date(ly, lm - 1 + i, 1);
-    futureKeys.push(toMonthKey(d));
-  }
+  const [ly, lm] = history[history.length - 1].month.split('-').map(Number);
+  for (let i = 1; i <= 60; i++) futureKeys.push(new Date(ly, lm - 1 + i, 1).toISOString().slice(0, 7));
   const allMonths = [...history.map(h => h.month), ...futureKeys];
 
-  const histVals = [
-    ...history.map(h => Math.round(h.value)),
-    ...new Array(60).fill(null)
-  ];
-
-  const startNW = history.length ? Math.round(history[history.length - 1].value) : 0;
-  const p90 = [...new Array(history.length - 1).fill(null), startNW, ...forecast.bands.p90.slice(1).map(Math.round)];
-  const p10 = [...new Array(history.length - 1).fill(null), startNW, ...forecast.bands.p10.slice(1).map(Math.round)];
-  const p50 = [...new Array(history.length - 1).fill(null), startNW, ...forecast.bands.p50.slice(1).map(Math.round)];
+  const histVals = [...history.map(h => Math.round(h.value)), ...new Array(60).fill(null)];
+  const startNW = Math.round(history[history.length - 1].value);
+  const p90 = [...new Array(11).fill(null), startNW, ...forecast.bands.p90.slice(1).map(Math.round)];
+  const p10 = [...new Array(11).fill(null), startNW, ...forecast.bands.p10.slice(1).map(Math.round)];
+  const p50 = [...new Array(11).fill(null), startNW, ...forecast.bands.p50.slice(1).map(Math.round)];
 
   const ctx1 = document.getElementById('netWorthChart').getContext('2d');
-  if (netWorthChartInstance) netWorthChartInstance.destroy();
-  netWorthChartInstance = new Chart(ctx1, {
+  if (nwChart) nwChart.destroy();
+  nwChart = new Chart(ctx1, {
     type: 'line',
     data: {
       labels: allMonths,
       datasets: [
-        {
-          label: 'Halisi',
-          data: histVals,
-          borderColor: tc.line,
-          backgroundColor: tc.fillLine,
-          fill: true,
-          tension: 0.35,
-          pointRadius: 0,
-          borderWidth: 2.5,
-          order: 1
-        },
-        {
-          label: 'P90 (Tumaini)',
-          data: p90,
-          borderColor: 'transparent',
-          backgroundColor: 'rgba(16,185,129,0.14)',
-          fill: '+1',
-          tension: 0.35,
-          pointRadius: 0,
-          borderWidth: 0,
-          order: 3
-        },
-        {
-          label: 'P10 (Uhafifu)',
-          data: p10,
-          borderColor: 'transparent',
-          backgroundColor: 'transparent',
-          fill: false,
-          tension: 0.35,
-          pointRadius: 0,
-          borderWidth: 0,
-          order: 4
-        },
-        {
-          label: 'Wastani (P50)',
-          data: p50,
-          borderColor: tc.lineProjection,
-          borderDash: [6, 4],
-          fill: false,
-          tension: 0.35,
-          pointRadius: 0,
-          borderWidth: 2,
-          order: 2
-        }
+        { label: 'Halisi', data: histVals, borderColor: tc.line, backgroundColor: dark ? 'rgba(127,160,245,0.12)' : 'rgba(10,36,114,0.08)', fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2.5 },
+        { label: 'P90', data: p90, borderColor: 'transparent', backgroundColor: 'rgba(16,185,129,0.14)', fill: '+1', tension: 0.35, pointRadius: 0, borderWidth: 0 },
+        { label: 'P10', data: p10, borderColor: 'transparent', fill: false, tension: 0.35, pointRadius: 0, borderWidth: 0 },
+        { label: 'Wastani', data: p50, borderColor: tc.lineProj, borderDash: [6, 4], fill: false, tension: 0.35, pointRadius: 0, borderWidth: 2 }
       ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: {
-          display: true,
-          position: 'bottom',
-          labels: {
-            color: tc.text,
-            boxWidth: 12,
-            font: { family: 'Inter', size: 10 },
-            filter: (item) => item.text !== 'P10 (Uhafifu)'
-          }
-        },
-        tooltip: {
-          filter: (item) => item.dataset.label !== 'P10 (Uhafifu)',
-          callbacks: {
-            label: (item) => {
-              if (item.raw == null) return null;
-              return item.dataset.label + ': ' + fmt(item.raw);
-            }
-          }
-        }
-      },
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { color: tc.text, boxWidth: 12, font: { size: 10 }, filter: i => i.text !== 'P10' } } },
       scales: {
-        x: {
-          ticks: { color: tc.text, maxRotation: 0, autoSkip: true, font: { family: 'Inter', size: 10 } },
-          grid: { color: 'transparent' }
-        },
-        y: {
-          ticks: {
-            color: tc.text,
-            callback: (v) => {
-              const abs = Math.abs(v);
-              if (abs >= 1e9) return (v/1e9).toFixed(1) + 'B';
-              if (abs >= 1e6) return (v/1e6).toFixed(1) + 'M';
-              if (abs >= 1e3) return (v/1e3).toFixed(0) + 'K';
-              return v;
-            },
-            font: { family: 'Inter', size: 10 }
-          },
-          grid: { color: tc.grid }
-        }
+        x: { ticks: { color: tc.text, maxRotation: 0, autoSkip: true, font: { size: 9 } }, grid: { color: 'transparent' } },
+        y: { ticks: { color: tc.text, callback: v => Math.abs(v) >= 1e6 ? (v/1e6).toFixed(1)+'M' : Math.abs(v) >= 1e3 ? (v/1e3).toFixed(0)+'K' : v, font: { size: 9 } }, grid: { color: tc.grid } }
       }
     }
   });
 
-  // Donut
   const breakdown = expenseBreakdown(currentMonthKey());
-  const labels = Object.keys(breakdown);
-  const values = Object.values(breakdown);
-  const total = values.reduce((a, b) => a + b, 0);
-
+  const labels = Object.keys(breakdown), values = Object.values(breakdown);
   const ctx2 = document.getElementById('expenseDonut').getContext('2d');
-  if (donutChartInstance) donutChartInstance.destroy();
-
-  if (labels.length === 0) {
-    document.getElementById('donutInfo').textContent = 'Hakuna matumizi yaliyorekodiwa mwezi huu.';
-    return;
-  }
-
-  donutChartInstance = new Chart(ctx2, {
+  if (donutChart) donutChart.destroy();
+  if (!labels.length) return;
+  donutChart = new Chart(ctx2, {
     type: 'doughnut',
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        backgroundColor: labels.map((_, i) => DONUT_COLORS[i % DONUT_COLORS.length]),
-        borderWidth: 2,
-        borderColor: DATA.theme === 'dark' ? '#182234' : '#FFFFFF'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '68%',
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (item) => {
-              const pct = total > 0 ? Math.round((item.raw / total) * 100) : 0;
-              return item.label + ': ' + fmt(item.raw) + ' (' + pct + '%)';
-            }
-          }
-        }
-      },
-      onClick: (evt, elements) => {
-        if (elements.length > 0) {
-          const idx = elements[0].index;
-          const pct = total > 0 ? Math.round((values[idx] / total) * 100) : 0;
-          document.getElementById('donutInfo').innerHTML =
-            `<b>${esc(labels[idx])}</b>: ${fmt(values[idx])} — asilimia ${pct} ya matumizi yote ya mwezi huu.`;
-        }
-      }
-    }
+    data: { labels, datasets: [{ data: values, backgroundColor: ['#0A2472','#10B981','#F59E0B','#EF4444','#7C3AED','#06B6D4','#EC4899'], borderWidth: 2, borderColor: dark ? '#182234' : '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false } } }
   });
-  document.getElementById('donutInfo').textContent = 'Bonyeza sehemu ya rangi hapo juu…';
 }
 
 /* ============================================================
-   7. RENDER: DASHBOARD
+   RENDER
    ============================================================ */
-function flashEl(el) {
-  el.classList.remove('flash');
-  void el.offsetWidth;
-  el.classList.add('flash');
-}
-
 function renderDashboard() {
-  const curM = currentMonthKey();
-  const nw = netWorth();
-  const inc = monthlyIncome(curM);
-  const exp = monthlyExpense(curM);
-  const sav = inc - exp;
+  const m = currentMonthKey();
+  const nw = netWorth(), inc = monthlyIncome(m), exp = monthlyExpense(m), sav = inc - exp;
 
-  const nwEl = document.getElementById('kpiNetWorth');
-  nwEl.textContent = fmt(nw);
-  nwEl.className = 'kpi-value ' + (nw >= 0 ? 'good' : 'bad');
-  document.getElementById('kpiNetWorthSub').textContent =
-    'Mali: ' + fmt(totalAssets()) + '  ·  Madeni: ' + fmt(totalDebts());
+  document.getElementById('kpiNetWorth').textContent = fmt(nw);
+  document.getElementById('kpiNetWorth').className = 'kpi-value ' + (nw >= 0 ? 'good' : 'bad');
+  document.getElementById('kpiNetWorthSub').textContent = 'Mali: ' + fmt(totalAssets()) + ' · Madeni: ' + fmt(totalDebts());
 
   document.getElementById('kpiIncome').textContent = fmt(inc);
-  document.getElementById('kpiIncomeSub').textContent =
-    DATA.income.filter(i => monthKey(i.date) === curM).length + ' vyanzo mwezi huu';
+  document.getElementById('kpiIncomeSub').textContent = DATA.income.filter(i => monthKey(i.date) === m).length + ' vyanzo';
 
   document.getElementById('kpiExpense').textContent = fmt(exp);
-  document.getElementById('kpiExpenseSub').textContent =
-    DATA.expense.filter(e => monthKey(e.date) === curM).length + ' matumizi mwezi huu';
+  document.getElementById('kpiExpenseSub').textContent = DATA.expense.filter(e => monthKey(e.date) === m).length + ' matumizi';
 
-  const savEl = document.getElementById('kpiSavings');
-  savEl.textContent = fmt(sav);
-  savEl.className = 'kpi-value ' + (sav >= 0 ? 'good' : 'bad');
-  document.getElementById('kpiSavingsSub').textContent =
-    sav >= 0 ? 'Unaokoa vizuri' : 'Matumizi yanazidi kipato';
+  document.getElementById('kpiSavings').textContent = fmt(sav);
+  document.getElementById('kpiSavings').className = 'kpi-value ' + (sav >= 0 ? 'good' : 'bad');
+  document.getElementById('kpiSavingsSub').textContent = sav >= 0 ? 'Unaokoa vizuri' : 'Matumizi yanazidi kipato';
 
-  renderNarrative(nw, inc, exp, sav);
+  const rate = inc > 0 ? Math.round((sav / inc) * 100) : 0;
+  document.getElementById('narrativeText').textContent =
+    `Kipato: ${fmt(inc)}, matumizi: ${fmt(exp)}, akiba: ${fmt(sav)} (${rate}%). Net Worth yako ni ${fmt(nw)}.`;
+
   renderCharts();
 }
 
-function renderNarrative(nw, inc, exp, sav) {
-  const cat = classifyUser();
-  const savingsRate = inc > 0 ? Math.round((sav / inc) * 100) : 0;
-  const topCatEntry = Object.entries(expenseBreakdown(currentMonthKey()))
-    .sort((a, b) => b[1] - a[1])[0];
-
-  let text = `Kwa mwezi huu, kipato chako ni ${fmt(inc)} na matumizi ni ${fmt(exp)}, ` +
-    `hivyo umeokoa ${fmt(sav)} (asilimia ${savingsRate} ya kipato). `;
-  if (topCatEntry) {
-    text += `Kategoria kubwa zaidi ya matumizi ni ${esc(topCatEntry[0])} (${fmt(topCatEntry[1])}). `;
-  }
-  text += `Kwa sasa unaainishwa kama <b>${esc(cat.name)}</b> — ${esc(cat.desc)} ` +
-    `Net Worth yako ya sasa ni ${fmt(nw)}.`;
-
-  document.getElementById('narrativeText').innerHTML = text;
-}
-
-/* ============================================================
-   8. RENDER: TRAJECTORY
-   ============================================================ */
-function renderTrajectory() {
-  const cat = classifyUser();
-  const card = document.getElementById('categoryCard');
-  card.style.setProperty('--cat-color', cat.color);
-  document.getElementById('categoryBadge').innerHTML = cat.emoji + ' ' + cat.name;
-  document.getElementById('categoryDesc').textContent = cat.desc;
-  document.getElementById('categoryAdvice').innerHTML = '<b>Ushauri wa haraka:</b> ' + cat.advice;
-
-  const forecast = buildForecast(60);
-  const f = forecast.fiveYear;
-
-  document.getElementById('projectionBig').textContent = fmt(f.expected);
-  document.getElementById('scenarioP10').textContent = fmt(f.pessimistic);
-  document.getElementById('scenarioP50').textContent = fmt(f.expected);
-  document.getElementById('scenarioP90').textContent = fmt(f.optimistic);
-
-  const regimeInfo = {
-    ACCELERATING_UP:   { label: '🚀 Unaongeza kasi', color: '#10B981', bg: 'rgba(16,185,129,0.14)' },
-    GROWING_SLOWER:    { label: '📉 Unakua lakini kasi inapungua', color: '#F59E0B', bg: 'rgba(245,158,11,0.14)' },
-    STABLE:            { label: '➡️ Hali ni tulivu', color: '#5B6579', bg: 'rgba(91,101,121,0.12)' },
-    RECOVERING:        { label: '🌱 Unarudi kwenye ukuaji', color: '#06B6D4', bg: 'rgba(6,182,212,0.14)' },
-    ACCELERATING_DOWN: { label: '⚠️ Unashuka kwa kasi', color: '#EF4444', bg: 'rgba(239,68,68,0.14)' }
-  };
-  const r = regimeInfo[forecast.regime] || regimeInfo.STABLE;
-  document.getElementById('regimeBadge').innerHTML =
-    `<span class="regime-badge" style="color:${r.color};background:${r.bg};">${r.label}</span>`;
-
-  const targetYear = new Date().getFullYear() + 5;
-  document.getElementById('projectionNote').innerHTML =
-    `Iwapo utaendelea na mwenendo wa sasa (wastani wa ${fmt(forecast.trend)}/mwezi), ` +
-    `Net Worth yako itakuwa takribani ${fmt(f.expected)} kufikia mwaka ${targetYear}.<br>` +
-    `<small>Akiba wastani: ${fmt(forecast.monthlySavingsAvg)}/mwezi · ` +
-    `Volatility (σ): ${fmt(forecast.sigma)}</small>`;
-}
-
-/* ============================================================
-   9. RENDER: HISTORY
-   ============================================================ */
-let historyFilter = 'all';
-
 function unifiedEntries() {
-  const entries = [];
-  DATA.income.forEach(i => entries.push({
-    id: i.id, type: 'income', label: 'Kipato',
-    desc: i.source, amount: i.amount, date: i.date || '0000-00-00'
-  }));
-  DATA.expense.forEach(e => entries.push({
-    id: e.id, type: 'expense', label: 'Matumizi',
-    desc: e.category, amount: -e.amount, date: e.date || '0000-00-00'
-  }));
-  DATA.asset.forEach(a => entries.push({
-    id: a.id, type: 'asset', label: 'Mali',
-    desc: a.name, amount: a.value, date: a.date || '0000-00-00'
-  }));
-  DATA.debt.forEach(d => entries.push({
-    id: d.id, type: 'debt', label: 'Deni',
-    desc: d.name, amount: -d.amount, date: d.date || '0000-00-00'
-  }));
-  return entries.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const e = [];
+  DATA.income.forEach(i => e.push({ id: i.id, type: 'income', label: 'Kipato', desc: i.source, amount: i.amount, date: i.date }));
+  DATA.expense.forEach(x => e.push({ id: x.id, type: 'expense', label: 'Matumizi', desc: x.category, amount: -x.amount, date: x.date }));
+  DATA.asset.forEach(x => e.push({ id: x.id, type: 'asset', label: 'Mali', desc: x.name, amount: x.value, date: x.date }));
+  DATA.debt.forEach(x => e.push({ id: x.id, type: 'debt', label: 'Deni', desc: x.name, amount: -x.amount, date: x.date }));
+  return e.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 }
 
 function renderHistory() {
   const tbody = document.getElementById('historyBody');
-  const all = unifiedEntries();
-  const entries = all.filter(e => historyFilter === 'all' || e.type === historyFilter);
+  const list = unifiedEntries().filter(e => historyFilter === 'all' || e.type === historyFilter);
   tbody.innerHTML = '';
-
-  document.getElementById('entryCount').textContent = 'rekodi ' + all.length;
-
-  const tableEl = document.querySelector('table.history-table');
-
-  if (entries.length === 0) {
-    document.getElementById('emptyNote').style.display = 'block';
-    tableEl.style.display = 'none';
-    return;
-  }
-  document.getElementById('emptyNote').style.display = 'none';
-  tableEl.style.display = 'table';
-
-  entries.forEach(e => {
+  document.getElementById('emptyNote').style.display = list.length ? 'none' : 'block';
+  document.querySelector('.history-table').style.display = list.length ? 'table' : 'none';
+  list.forEach(e => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${esc(e.date)}</td>
-      <td><span class="tag ${esc(e.type)}">${esc(e.label)}</span></td>
-      <td>${esc(e.desc)}</td>
-      <td>${fmt(e.amount)}</td>
-      <td><button class="del-btn" title="Futa" data-id="${esc(e.id)}" data-type="${esc(e.type)}">&#10005;</button></td>
-    `;
+    tr.innerHTML = `<td>${esc(e.date)}</td><td><span class="tag ${e.type}">${e.label}</span></td><td>${esc(e.desc)}</td><td>${fmt(e.amount)}</td><td><button class="del-btn" data-id="${e.id}" data-type="${e.type}">✕</button></td>`;
     tbody.appendChild(tr);
   });
-
-  tbody.querySelectorAll('.del-btn').forEach(btn => {
-    btn.addEventListener('click', () => deleteEntry(btn.dataset.type, btn.dataset.id));
-  });
-}
-
-function deleteEntry(type, id) {
-  const list = DATA[type];
-  if (!list) return;
-  DATA[type] = list.filter(x => x.id !== id);
-  saveData();
-  renderHistory();
-  renderDashboard();
-}
-
-document.querySelectorAll('.filter-pills button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    historyFilter = btn.dataset.filter;
-    document.querySelectorAll('.filter-pills button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderHistory();
-  });
-});
-
-document.getElementById('resetAllBtn').addEventListener('click', () => {
-  if (confirm('Una uhakika unataka kufuta rekodi zote? Hatua hii haiwezi kutenguliwa.')) {
-    DATA = {
-      income: [], expense: [], asset: [], debt: [], goal: [],
-      theme: DATA.theme
-    };
-    saveData();
-    renderHistory();
-    renderDashboard();
-    renderTrajectory();
-    renderGoals();
-    showToast('🗑 Rekodi zote zimefutwa');
-  }
-});
-
-/* ============================================================
-   10. RENDER: GOALS (na ETA)
-   ============================================================ */
-function parseAmountFromGoal(text) {
-  const cleaned = String(text || '').replace(/,/g, '');
-  const match = cleaned.match(/(\d{4,})/);
-  return match ? Number(match[1]) : null;
-}
-
-function estimateGoalETA(goalText, forecast) {
-  const target = parseAmountFromGoal(goalText);
-  if (!target) return null;
-  const startNW = netWorth();
-  if (startNW >= target) return { months: 0, already: true, target };
-
-  for (let h = 1; h < forecast.bands.p50.length; h++) {
-    if (forecast.bands.p50[h] >= target) {
-      return { months: h, already: false, target };
-    }
-  }
-  return { months: null, already: false, target };
-}
-
-function renderGoals() {
-  const list = document.getElementById('goalList');
-  list.innerHTML = '';
-  if (DATA.goal.length === 0) {
-    list.innerHTML = '<div class="empty-note">Bado hujaweka lengo lolote.</div>';
-    return;
-  }
-
-  const forecast = buildForecast(60);
-
-  DATA.goal.slice().reverse().forEach(g => {
-    const eta = estimateGoalETA(g.text, forecast);
-    let etaText = '';
-    let etaClass = '';
-    if (eta) {
-      if (eta.already) {
-        etaText = '✅ Umekwisha fikia lengo hili!';
-        etaClass = 'eta';
-      } else if (eta.months) {
-        const years = (eta.months / 12).toFixed(1);
-        const targetDate = new Date();
-        targetDate.setMonth(targetDate.getMonth() + eta.months);
-        etaText = `🎯 Makadirio: miezi ${eta.months} (~miaka ${years}) — ${toMonthKey(targetDate)}`;
-        etaClass = 'eta';
-      } else {
-        etaText = '⚠️ Haifikii ndani ya miaka 5 kwa mwenendo wa sasa';
-        etaClass = '';
-      }
-    }
-
-    const div = document.createElement('div');
-    div.className = 'card goal-item';
-    div.innerHTML = `
-      <div class="txt">
-        ${esc(g.text)}
-        <small>Imewekwa: ${esc(g.date)}</small>
-        ${etaText ? `<small class="${etaClass}">${esc(etaText)}</small>` : ''}
-      </div>
-      <button class="del-btn" data-id="${esc(g.id)}" title="Futa">&#10005;</button>
-    `;
-    div.querySelector('.del-btn').addEventListener('click', () => {
-      DATA.goal = DATA.goal.filter(x => x.id !== g.id);
-      saveData();
-      renderGoals();
-    });
-    list.appendChild(div);
-  });
+  tbody.querySelectorAll('.del-btn').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('Futa rekodi hii?')) return;
+    try {
+      await dbDelete(b.dataset.type, b.dataset.id);
+      DATA[b.dataset.type] = DATA[b.dataset.type].filter(x => x.id !== b.dataset.id);
+      renderHistory(); renderDashboard();
+      showToast('🗑 Imefutwa');
+    } catch (err) { showToast('❌ ' + err.message); }
+  }));
 }
 
 /* ============================================================
-   11. NAVIGATION
+   NAVIGATION + THEME
    ============================================================ */
-function goToPage(pageId) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const el = document.getElementById('page-' + pageId);
-  if (el) el.classList.add('active');
-
-  document.querySelectorAll('#desktopTabs button, #mobileTabs button').forEach(b => {
-    b.classList.toggle('active', b.dataset.page === pageId);
+document.querySelectorAll('#desktopTabs button, #mobileTabs button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + b.dataset.page).classList.add('active');
+    document.querySelectorAll('#desktopTabs button, #mobileTabs button').forEach(x => x.classList.toggle('active', x.dataset.page === b.dataset.page));
+    if (b.dataset.page === 'dashboard') renderDashboard();
+    if (b.dataset.page === 'history') renderHistory();
   });
-
-  if (pageId === 'dashboard') renderDashboard();
-  if (pageId === 'trajectory') renderTrajectory();
-  if (pageId === 'history') renderHistory();
-  if (pageId === 'input') renderGoals();
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-document.querySelectorAll('#desktopTabs button, #mobileTabs button').forEach(btn => {
-  btn.addEventListener('click', () => goToPage(btn.dataset.page));
 });
 
-/* ============================================================
-   12. THEME
-   ============================================================ */
 function applyTheme() {
   document.body.classList.toggle('dark', DATA.theme === 'dark');
-  document.getElementById('themeIcon').innerHTML = DATA.theme === 'dark' ? '&#9728;' : '&#9789;';
-  document.getElementById('themeLabel').textContent = DATA.theme === 'dark' ? 'Light' : 'Dark Mode';
-  const themeMeta = document.querySelector('meta[name="theme-color"]');
-  if (themeMeta) themeMeta.setAttribute('content', DATA.theme === 'dark' ? '#1E3A8A' : '#0A2472');
-
-  // Render charts tu kama dashboard iko active
-  if (document.getElementById('page-dashboard').classList.contains('active')) {
-    renderCharts();
-  }
+  document.getElementById('themeToggle').textContent = DATA.theme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('theme', DATA.theme);
+  if (document.getElementById('page-dashboard').classList.contains('active')) renderCharts();
 }
-
 document.getElementById('themeToggle').addEventListener('click', () => {
   DATA.theme = DATA.theme === 'dark' ? 'light' : 'dark';
-  saveData();
   applyTheme();
 });
 
 /* ============================================================
-   13. FORMS
+   AUTH
+   ============================================================ */
+let isSignUp = false;
+const authScreen = document.getElementById('authScreen');
+
+document.getElementById('authToggle').addEventListener('click', (e) => {
+  e.preventDefault();
+  isSignUp = !isSignUp;
+  document.getElementById('authTitle').textContent = isSignUp ? 'Jisajili' : 'Ingia';
+  document.getElementById('authSub').textContent = isSignUp ? 'Tengeneza akaunti mpya' : 'Ingia kwenye akaunti yako';
+  document.getElementById('signupFields').style.display = isSignUp ? 'block' : 'none';
+  document.getElementById('authSubmit').textContent = isSignUp ? 'Jisajili' : 'Ingia';
+  document.getElementById('authToggle').textContent = isSignUp ? 'Tayari una akaunti? Ingia' : 'Huna akaunti? Jisajili';
+  document.getElementById('authError').textContent = '';
+});
+
+document.getElementById('authSubmit').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errEl = document.getElementById('authError');
+  const btn = document.getElementById('authSubmit');
+  errEl.textContent = '';
+  btn.disabled = true;
+
+  try {
+    if (isSignUp) {
+      const name = document.getElementById('authName').value.trim();
+      const phone = document.getElementById('authPhone').value.trim();
+      if (!email || password.length < 6) throw new Error('Barua pepe na neno la siri (6+) zinahitajika');
+      const { error } = await db.auth.signUp({ email, password, options: { data: { full_name: name, phone } } });
+      if (error) throw error;
+      showToast('✅ Akaunti imetengenezwa. Angalia barua pepe.');
+    } else {
+      const { error } = await db.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    }
+  } catch (err) {
+    errEl.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+async function handleSession(session) {
+  if (session?.user) {
+    currentUser = session.user;
+    authScreen.classList.add('hidden');
+    document.getElementById('appRoot').style.display = 'block';
+    try {
+      await loadAll();
+      applyTheme();
+      renderDashboard();
+      renderHistory();
+    } catch (err) {
+      console.error(err);
+      showToast('❌ Tatizo la kupakua data: ' + err.message);
+    }
+  } else {
+    currentUser = null;
+    authScreen.classList.remove('hidden');
+    document.getElementById('appRoot').style.display = 'none';
+    DATA = { income: [], expense: [], asset: [], debt: [], goal: [], theme: DATA.theme };
+  }
+}
+
+db.auth.onAuthStateChange((_e, session) => handleSession(session));
+
+document.getElementById('signOutBtn').addEventListener('click', async () => {
+  if (!confirm('Una uhakika unataka kutoka?')) return;
+  await db.auth.signOut();
+});
+
+/* ============================================================
+   FORMS
    ============================================================ */
 document.getElementById('incomeDate').value = todayStr();
 document.getElementById('expenseDate').value = todayStr();
 
-document.getElementById('formIncome').addEventListener('submit', (e) => {
+document.getElementById('formIncome').addEventListener('submit', async (e) => {
   e.preventDefault();
-  DATA.income.push({
-    id: uid(),
-    source: document.getElementById('incomeSource').value.trim(),
-    amount: Number(document.getElementById('incomeAmount').value),
-    date: document.getElementById('incomeDate').value
-  });
-  saveData();
-  e.target.reset();
-  document.getElementById('incomeDate').value = todayStr();
-  renderDashboard();
-  showToast('✅ Kipato kimeongezwa');
-});
-
-document.getElementById('formExpense').addEventListener('submit', (e) => {
-  e.preventDefault();
-  DATA.expense.push({
-    id: uid(),
-    category: document.getElementById('expenseCategory').value,
-    amount: Number(document.getElementById('expenseAmount').value),
-    date: document.getElementById('expenseDate').value
-  });
-  saveData();
-  e.target.reset();
-  document.getElementById('expenseDate').value = todayStr();
-  renderDashboard();
-  showToast('✅ Matumizi yameongezwa');
-});
-
-document.getElementById('formAsset').addEventListener('submit', (e) => {
-  e.preventDefault();
-  DATA.asset.push({
-    id: uid(),
-    name: document.getElementById('assetName').value.trim(),
-    value: Number(document.getElementById('assetValue').value),
-    date: todayStr()
-  });
-  saveData();
-  e.target.reset();
-  renderDashboard();
-  showToast('✅ Mali imeongezwa');
-});
-
-document.getElementById('formDebt').addEventListener('submit', (e) => {
-  e.preventDefault();
-  DATA.debt.push({
-    id: uid(),
-    name: document.getElementById('debtName').value.trim(),
-    amount: Number(document.getElementById('debtAmount').value),
-    interest_rate: Number(document.getElementById('debtRate').value) || 0,
-    date: todayStr()
-  });
-  saveData();
-  e.target.reset();
-  renderDashboard();
-  showToast('✅ Deni limeongezwa');
-});
-
-document.getElementById('formGoal').addEventListener('submit', (e) => {
-  e.preventDefault();
-  DATA.goal.push({
-    id: uid(),
-    text: document.getElementById('goalText').value.trim(),
-    date: todayStr()
-  });
-  saveData();
-  e.target.reset();
-  renderGoals();
-  showToast('✅ Lengo limewekwa');
-});
-
-/* ============================================================
-   14. EXPORT / IMPORT
-   ============================================================ */
-document.getElementById('exportBtn').addEventListener('click', () => {
-  const exportData = {
-    version: 2,
-    exported_at: new Date().toISOString(),
-    data: DATA
-  };
-  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `ramani-backup-${todayStr()}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('✅ Backup imepakuliwa');
-});
-
-document.getElementById('importBtn').addEventListener('click', () => {
-  document.getElementById('importFile').click();
-});
-
-document.getElementById('importFile').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    try {
-      const parsed = JSON.parse(evt.target.result);
-      const imported = parsed.data || parsed;
-
-      if (!imported || !Array.isArray(imported.income)) {
-        throw new Error('Faili si sahihi');
-      }
-
-      if (!confirm('Data yako ya sasa itabadilishwa. Una uhakika?')) return;
-
-      DATA = {
-        income: imported.income || [],
-        expense: imported.expense || [],
-        asset: imported.asset || [],
-        debt: imported.debt || [],
-        goal: imported.goal || [],
-        theme: imported.theme || DATA.theme
-      };
-      saveData();
-      applyTheme();
-      renderDashboard();
-      renderTrajectory();
-      renderHistory();
-      renderGoals();
-      showToast('✅ Data imepakiwa kikamilifu');
-    } catch (err) {
-      showToast('❌ Faili si sahihi: ' + err.message, 3500);
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-});
-
-/* ============================================================
-   15. PWA — Manifest via Blob + Install Prompt
-   ============================================================ */
-const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#0A2472"/>
-  <path d="M110 360 L200 270 L260 320 L400 170" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M320 170 L400 170 L400 250" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <circle cx="200" cy="270" r="20" fill="#10B981"/>
-  <circle cx="260" cy="320" r="20" fill="#F59E0B"/>
-</svg>`;
-
-const ICON_URI = 'data:image/svg+xml;base64,' +
-  btoa(unescape(encodeURIComponent(ICON_SVG)));
-
-const manifestObj = {
-  name: 'Ramani ya Kifedha',
-  short_name: 'Ramani',
-  description: 'Mfumo binafsi wa kufuatilia kipato, matumizi, mali na mwelekeo wa kifedha.',
-  lang: 'sw',
-  dir: 'ltr',
-  start_url: './',
-  scope: './',
-  display: 'standalone',
-  orientation: 'portrait',
-  background_color: '#0A2472',
-  theme_color: '#0A2472',
-  categories: ['finance', 'productivity'],
-  icons: [
-    { src: ICON_URI, sizes: '192x192', type: 'image/svg+xml', purpose: 'any' },
-    { src: ICON_URI, sizes: '512x512', type: 'image/svg+xml', purpose: 'any' },
-    { src: ICON_URI, sizes: '512x512', type: 'image/svg+xml', purpose: 'maskable' }
-  ]
-};
-
-try {
-  const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
-  const manifestUrl = URL.createObjectURL(manifestBlob);
-  document.getElementById('manifestLink').setAttribute('href', manifestUrl);
-} catch (e) {
-  console.warn('Manifest blob failed:', e);
-}
-
-// Favicon dynamic
-const faviconLink = document.createElement('link');
-faviconLink.rel = 'icon';
-faviconLink.type = 'image/svg+xml';
-faviconLink.href = ICON_URI;
-document.head.appendChild(faviconLink);
-
-const appleIcon = document.createElement('link');
-appleIcon.rel = 'apple-touch-icon';
-appleIcon.href = ICON_URI;
-document.head.appendChild(appleIcon);
-
-// Install prompt
-let deferredPrompt = null;
-const installBtn = document.getElementById('installBtn');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = 'inline-flex';
-});
-
-installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) {
-    showToast('Tumia menyu ya browser: "Add to Home Screen"');
-    return;
-  }
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') showToast('🎉 Asante kwa ku-install!');
-  deferredPrompt = null;
-  installBtn.style.display = 'none';
-});
-
-window.addEventListener('appinstalled', () => {
-  installBtn.style.display = 'none';
-  showToast('🎉 Ramani imewekwa kwenye kifaa chako!');
-});
-
-/* Service Worker — inajaribu kutoka blob (kizuizi cha browser kinaweza kuzuia) */
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    const swCode = `
-      const CACHE = 'ramani-v1';
-      const FILES = ['./'];
-      self.addEventListener('install', e => {
-        self.skipWaiting();
-        e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES).catch(()=>{})));
-      });
-      self.addEventListener('activate', e => {
-        self.clients.claim();
-        e.waitUntil(caches.keys().then(keys =>
-          Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-        ));
-      });
-      self.addEventListener('fetch', e => {
-        if (e.request.method !== 'GET') return;
-        e.respondWith(
-          caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('./')))
-        );
-      });
-    `;
-    const blob = new Blob([swCode], { type: 'application/javascript' });
-    const url = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(url).catch(() => {
-      // Kimya — browser nyingi haziruhusu SW kutoka blob
-      console.info('SW ya blob haikufanya kazi (kawaida). Tumia sw.js tofauti kwa offline caching kamili.');
+  try {
+    const rec = await dbAdd('income', {
+      source: document.getElementById('incomeSource').value.trim(),
+      amount: Number(document.getElementById('incomeAmount').value),
+      date: document.getElementById('incomeDate').value
     });
-  });
-}
+    DATA.income.unshift(rec);
+    e.target.reset();
+    document.getElementById('incomeDate').value = todayStr();
+    renderDashboard();
+    showToast('✅ Kipato kimeongezwa');
+  } catch (err) { showToast('❌ ' + err.message); }
+});
 
-/* Scroll shadow kwenye header */
-window.addEventListener('scroll', () => {
-  document.getElementById('topbar').classList.toggle('scrolled', window.scrollY > 10);
-}, { passive: true });
+document.getElementById('formExpense').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    const rec = await dbAdd('expense', {
+      category: document.getElementById('expenseCategory').value,
+      amount: Number(document.getElementById('expenseAmount').value),
+      date: document.getElementById('expenseDate').value
+    });
+    DATA.expense.unshift(rec);
+    e.target.reset();
+    document.getElementById('expenseDate').value = todayStr();
+    renderDashboard();
+    showToast('✅ Matumizi yameongezwa');
+  } catch (err) { showToast('❌ ' + err.message); }
+});
+
+document.getElementById('formAsset').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    const rec = await dbAdd('asset', {
+      name: document.getElementById('assetName').value.trim(),
+      value: Number(document.getElementById('assetValue').value),
+      date: todayStr()
+    });
+    DATA.asset.unshift(rec);
+    e.target.reset();
+    renderDashboard();
+    showToast('✅ Mali imeongezwa');
+  } catch (err) { showToast('❌ ' + err.message); }
+});
+
+document.getElementById('formDebt').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    const rec = await dbAdd('debt', {
+      name: document.getElementById('debtName').value.trim(),
+      amount: Number(document.getElementById('debtAmount').value),
+      interest_rate: 0,
+      date: todayStr()
+    });
+    DATA.debt.unshift(rec);
+    e.target.reset();
+    renderDashboard();
+    showToast('✅ Deni limeongezwa');
+  } catch (err) { showToast('❌ ' + err.message); }
+});
+
+document.getElementById('formGoal').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    const rec = await dbAdd('goal', {
+      text: document.getElementById('goalText').value.trim(),
+      date: todayStr()
+    });
+    DATA.goal.unshift(rec);
+    e.target.reset();
+    showToast('✅ Lengo limewekwa');
+  } catch (err) { showToast('❌ ' + err.message); }
+});
+
+document.getElementById('resetAllBtn').addEventListener('click', async () => {
+  if (!confirm('Futa rekodi ZOTE? Haiwezi kurudishwa.')) return;
+  try {
+    await dbClearAll();
+    DATA = { income: [], expense: [], asset: [], debt: [], goal: [], theme: DATA.theme };
+    renderDashboard(); renderHistory();
+    showToast('🗑 Zote zimefutwa');
+  } catch (err) { showToast('❌ ' + err.message); }
+});
+
+document.querySelectorAll('.filter-pills button').forEach(b => {
+  b.addEventListener('click', () => {
+    historyFilter = b.dataset.filter;
+    document.querySelectorAll('.filter-pills button').forEach(x => x.classList.toggle('active', x.dataset.filter === historyFilter));
+    renderHistory();
+  });
+});
 
 /* ============================================================
-   16. INIT
+   INIT
    ============================================================ */
-applyTheme();
-renderDashboard();
-renderTrajectory();
-renderHistory();
-renderGoals();
+(async () => {
+  const { data: { session } } = await db.auth.getSession();
+  handleSession(session);
+})();
 </script>
-
 </body>
-</html>
+      </html>
