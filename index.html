@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{--navy:#0A2472;--navy-soft:#17348f;--good:#10B981;--bad:#EF4444;--warn:#F59E0B;--bg:#F8FAFC;--bg-elevated:#FFF;--bg-sunken:#EEF1F6;--border:#E1E7F0;--text:#101828;--text-muted:#5B6579;--text-faint:#6B7280;--shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05);--radius:14px}
   body.dark{--navy:#1E3A8A;--navy-soft:#3B5BDB;--bg:#111827;--bg-elevated:#182234;--bg-sunken:#0D1420;--border:#2A3547;--text:#EDF1F7;--text-muted:#9BA6BC;--text-faint:#8B95A8;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35)}
@@ -26,7 +25,7 @@
   .btn:disabled{opacity:.6;cursor:wait}
   .field{margin-bottom:12px}
   .field label{display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:6px}
-  .field input,.field select{width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-sunken);color:var(--text);font-family:inherit;font-size:.9rem;transition:border-color .2s}
+  .field input,.field select{width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-sunken);color:var(--text);font-family:inherit;font-size:.9rem}
   .field input:focus,.field select:focus{outline:none;border-color:var(--navy-soft);background:var(--bg-elevated)}
   #authScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#0A2472 0%,#17348f 100%);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
   #authScreen.hidden{display:none}
@@ -113,11 +112,7 @@
 <body>
 
 <div id="authScreen">
-  <div class="auth-box" id="authBox">
-    <div class="auth-logo">💰</div>
-    <h2>Inapakia…</h2>
-    <p class="sub">Tafadhali subiri</p>
-  </div>
+  <div class="auth-box" id="authBox"></div>
 </div>
 
 <div id="appRoot">
@@ -238,57 +233,15 @@
 
 <script>
 /* ============================================================
-   GLOBAL ERROR HANDLER
+   HELPERS
    ============================================================ */
-window.addEventListener('error', (e) => {
-  console.error('Global error:', e.error || e.message);
-});
-
-function showAuthMessage(icon, title, sub) {
-  const box = document.getElementById('authBox');
-  if (!box) return;
-  box.innerHTML = `
-    <div class="auth-logo">${icon}</div>
-    <h2 style="color:${icon === '⚠️' ? '#EF4444' : ''}">${title}</h2>
-    <p class="sub">${sub}</p>
-    <div class="auth-brand">
-      Imetengenezwa na <b>Mr. Buhalata</b><br>
-      📞 <a href="tel:+255615269169" style="color:inherit;text-decoration:none;font-weight:700">+255 615 269 169</a>
-    </div>
-  `;
-}
-
-/* ============================================================
-   1. CHECK DEPENDENCIES
-   ============================================================ */
-if (typeof window.supabase === 'undefined') {
-  showAuthMessage('⚠️', 'Supabase SDK haijapakiwa',
-    'Angalia internet yako, kisha refresh ukurasa (Ctrl+Shift+R au kwenye simu bofya bofya mara mbili).');
-  throw new Error('Supabase SDK not loaded');
-}
-
-if (typeof window.Chart === 'undefined') {
-  console.warn('Chart.js haijapakiwa — chati hazitaonekana');
-}
-
-/* ============================================================
-   2. SUPABASE INIT
-   ============================================================ */
-const SUPABASE_URL = 'https://sldbrodqqshydbsigmjy.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_9BUJLU9ynkG7cSMu5Etx_Q_-sMpPnmR';
-const { createClient } = window.supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
-});
-
-/* ============================================================
-   3. HELPERS
-   ============================================================ */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const todayStr = () => new Date().toISOString().slice(0, 10);
 const currentMonthKey = () => new Date().toISOString().slice(0, 7);
 const monthKey = (d) => (d || '').slice(0, 7);
 const fmt = (n) => { const v = Number(n) || 0; return (v < 0 ? '-' : '') + 'Tsh ' + Math.abs(Math.round(v)).toLocaleString('en-US'); };
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 function showToast(msg, ms = 2600) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -298,24 +251,65 @@ function showToast(msg, ms = 2600) {
 }
 
 /* ============================================================
-   4. BIOMETRIC MODULE
+   STORAGE — localStorage pekee (HAKUNA DATABASE)
+   ============================================================ */
+const STORAGE_KEY = 'ramani_local_v1';
+const BIO_KEY = 'ramani_bio_v1';
+
+let DATA = {
+  income: [], expense: [], asset: [], debt: [], goal: [],
+  theme: localStorage.getItem('theme') || 'light'
+};
+
+let currentUser = null; // { name, phone } — kifaa kimoja
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    DATA = { ...DATA, ...parsed, theme: DATA.theme };
+  } catch (e) { console.warn('Load error:', e); }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+  } catch (e) {
+    console.warn('Save error:', e);
+    showToast('⚠️ Hifadhi imeshindwa');
+  }
+}
+
+/* ============================================================
+   PROFILE — kifaa kimoja, mtumiaji mmoja
+   ============================================================ */
+const PROFILE_KEY = 'ramani_profile_v1';
+
+function getProfile() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY)); } catch { return null; }
+}
+function setProfile(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
+function clearProfile() { localStorage.removeItem(PROFILE_KEY); }
+
+/* ============================================================
+   BIOMETRIC / PIN ya kifaa
    ============================================================ */
 const BIOMETRIC = (() => {
-  const CRED_KEY = 'ramani_bio_cred_v1';
-  const getCred = () => { try { return JSON.parse(localStorage.getItem(CRED_KEY)); } catch { return null; } };
-  const setCred = (c) => localStorage.setItem(CRED_KEY, JSON.stringify(c));
-  const clearCred = () => localStorage.removeItem(CRED_KEY);
+  const getCred = () => { try { return JSON.parse(localStorage.getItem(BIO_KEY)); } catch { return null; } };
+  const setCred = (c) => localStorage.setItem(BIO_KEY, JSON.stringify(c));
+  const clearCred = () => localStorage.removeItem(BIO_KEY);
   const isEnabled = () => !!getCred();
   const isSupported = () => !!(window.PublicKeyCredential && navigator.credentials && window.isSecureContext);
 
-  async function enable(userEmail) {
+  async function enable(userName) {
     if (!isSupported()) throw new Error('Kifaa hakiungi mkono biometric au app haitumii HTTPS');
     const userId = crypto.getRandomValues(new Uint8Array(32));
     const cred = await navigator.credentials.create({
       publicKey: {
         challenge: crypto.getRandomValues(new Uint8Array(32)),
         rp: { name: 'Ramani ya Kifedha', id: location.hostname },
-        user: { id: userId, name: userEmail || 'user@ramani', displayName: userEmail || 'Mtumiaji' },
+        user: { id: userId, name: userName || 'user@ramani', displayName: userName || 'Mtumiaji' },
         pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
         authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'preferred' },
         timeout: 60000,
@@ -324,7 +318,7 @@ const BIOMETRIC = (() => {
     });
     if (!cred) throw new Error('Usajili ulikatishwa');
     const b64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
-    setCred({ credentialId: b64, email: userEmail, created: Date.now() });
+    setCred({ credentialId: b64, name: userName, created: Date.now() });
     return true;
   }
 
@@ -349,69 +343,20 @@ const BIOMETRIC = (() => {
 })();
 
 /* ============================================================
-   5. STATE
-   ============================================================ */
-let DATA = { income: [], expense: [], asset: [], debt: [], goal: [], theme: localStorage.getItem('theme') || 'light' };
-let currentUser = null;
-let historyFilter = 'all';
-let nwChart = null, donutChart = null;
-let bioUnlocked = false;
-
-/* ============================================================
-   6. SUPABASE CRUD
-   ============================================================ */
-async function loadAll() {
-  const [inc, exp, ast, dbt, gl] = await Promise.all([
-    db.from('income').select('*').order('date', { ascending: false }),
-    db.from('expense').select('*').order('date', { ascending: false }),
-    db.from('asset').select('*').order('date', { ascending: false }),
-    db.from('debt').select('*').order('date', { ascending: false }),
-    db.from('goal').select('*').order('date', { ascending: false })
-  ]);
-  if (inc.error) throw inc.error;
-  DATA.income = inc.data || [];
-  DATA.expense = exp.data || [];
-  DATA.asset = ast.data || [];
-  DATA.debt = dbt.data || [];
-  DATA.goal = gl.data || [];
-}
-
-async function dbAdd(table, record) {
-  const payload = { ...record, user_id: currentUser.id };
-  const { data, error } = await db.from(table).insert([payload]).select().single();
-  if (error) throw error;
-  return data;
-}
-
-async function dbDelete(table, id) {
-  const { error } = await db.from(table).delete().eq('id', id);
-  if (error) throw error;
-}
-
-async function dbClearAll() {
-  const uid = currentUser.id;
-  await Promise.all([
-    db.from('income').delete().eq('user_id', uid),
-    db.from('expense').delete().eq('user_id', uid),
-    db.from('asset').delete().eq('user_id', uid),
-    db.from('debt').delete().eq('user_id', uid),
-    db.from('goal').delete().eq('user_id', uid)
-  ]);
-}
-
-/* ============================================================
-   7. CALCULATIONS
+   CALCULATIONS
    ============================================================ */
 const totalAssets = () => DATA.asset.reduce((s, a) => s + Number(a.value || 0), 0);
 const totalDebts = () => DATA.debt.reduce((s, d) => s + Number(d.amount || 0), 0);
 const netWorth = () => totalAssets() - totalDebts();
 const monthlyIncome = (m) => DATA.income.filter(x => monthKey(x.date) === m).reduce((s, x) => s + Number(x.amount || 0), 0);
 const monthlyExpense = (m) => DATA.expense.filter(e => monthKey(e.date) === m).reduce((s, e) => s + Number(e.amount || 0), 0);
+
 function expenseBreakdown(m) {
   const by = {};
   DATA.expense.filter(e => monthKey(e.date) === m).forEach(e => { by[e.category] = (by[e.category] || 0) + Number(e.amount || 0); });
   return by;
 }
+
 function buildNetWorthHistory() {
   const months = [];
   const today = new Date();
@@ -426,12 +371,13 @@ function buildNetWorthHistory() {
 }
 
 /* ============================================================
-   8. PREDICTION
+   PREDICTION — Holt + Monte Carlo
    ============================================================ */
 const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0;
 const stdev = a => { if (a.length < 2) return 0; const m = mean(a); return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1)); };
 const percentile = (sorted, p) => { const i = (sorted.length - 1) * p; const lo = Math.floor(i), hi = Math.ceil(i); return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo); };
 const gaussian = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+
 function holtLinear(values, a = 0.45, b = 0.3) {
   if (values.length < 2) return { trend: 0, fitted: [{ level: values[0] || 0, trend: 0 }] };
   let level = values[0], trend = values[1] - values[0];
@@ -444,6 +390,7 @@ function holtLinear(values, a = 0.45, b = 0.3) {
   }
   return { level, trend, fitted };
 }
+
 function buildForecast(h = 60) {
   const months = [];
   const today = new Date();
@@ -473,8 +420,10 @@ function buildForecast(h = 60) {
 }
 
 /* ============================================================
-   9. CHARTS
+   CHARTS
    ============================================================ */
+let nwChart = null, donutChart = null;
+
 function renderCharts() {
   if (typeof window.Chart === 'undefined') return;
   const dark = DATA.theme === 'dark';
@@ -518,7 +467,7 @@ function renderCharts() {
 }
 
 /* ============================================================
-   10. RENDER
+   RENDER
    ============================================================ */
 function renderDashboard() {
   const m = currentMonthKey();
@@ -558,19 +507,19 @@ function renderHistory() {
     tr.innerHTML = `<td>${esc(e.date)}</td><td><span class="tag ${e.type}">${e.label}</span></td><td>${esc(e.desc)}</td><td>${fmt(e.amount)}</td><td><button class="del-btn" data-id="${e.id}" data-type="${e.type}">✕</button></td>`;
     tbody.appendChild(tr);
   });
-  tbody.querySelectorAll('.del-btn').forEach(b => b.addEventListener('click', async () => {
+  tbody.querySelectorAll('.del-btn').forEach(b => b.addEventListener('click', () => {
     if (!confirm('Futa rekodi hii?')) return;
-    try {
-      await dbDelete(b.dataset.type, b.dataset.id);
-      DATA[b.dataset.type] = DATA[b.dataset.type].filter(x => x.id !== b.dataset.id);
-      renderHistory(); renderDashboard();
-      showToast('🗑 Imefutwa');
-    } catch (err) { showToast('❌ ' + err.message); }
+    DATA[b.dataset.type] = DATA[b.dataset.type].filter(x => x.id !== b.dataset.id);
+    saveData();
+    renderHistory(); renderDashboard();
+    showToast('🗑 Imefutwa');
   }));
 }
 
+let historyFilter = 'all';
+
 /* ============================================================
-   11. NAVIGATION + THEME
+   NAVIGATION + THEME
    ============================================================ */
 document.querySelectorAll('#desktopTabs button, #mobileTabs button').forEach(b => {
   b.addEventListener('click', () => {
@@ -581,6 +530,7 @@ document.querySelectorAll('#desktopTabs button, #mobileTabs button').forEach(b =
     if (b.dataset.page === 'history') renderHistory();
   });
 });
+
 function applyTheme() {
   document.body.classList.toggle('dark', DATA.theme === 'dark');
   const tt = document.getElementById('themeToggle');
@@ -594,65 +544,102 @@ document.getElementById('themeToggle').addEventListener('click', () => {
 });
 
 /* ============================================================
-   12. AUTH SCREEN
+   AUTH SCREEN
    ============================================================ */
 const authScreen = document.getElementById('authScreen');
 const authBox = document.getElementById('authBox');
 
-function renderAuth(step = 'login') {
-  if (step === 'login') {
+function renderAuth(step) {
+  const profile = getProfile();
+
+  /* ---- SIGNUP (mara ya kwanza kwenye kifaa) ---- */
+  if (step === 'signup') {
     authBox.innerHTML = `
       <div class="auth-logo">💰</div>
-      <h2>Karibu Ramani</h2>
-      <p class="sub">Ingia au jisajili ili kuanza</p>
-      <div id="signupFields" style="display:none">
-        <input type="text" class="auth-input" id="authName" placeholder="Jina lako kamili">
-        <input type="tel" class="auth-input" id="authPhone" placeholder="Namba ya simu (+255...)">
-      </div>
-      <input type="email" class="auth-input" id="authEmail" placeholder="Barua pepe" autocomplete="email">
-      <input type="password" class="auth-input" id="authPassword" placeholder="Neno la siri (6+)" autocomplete="current-password">
+      <h2>Tengeneza Akaunti</h2>
+      <p class="sub">Jisajili ili kuanza kufuatilia fedha zako</p>
+      <input type="text" class="auth-input" id="authName" placeholder="Jina lako kamili">
+      <input type="tel" class="auth-input" id="authPhone" placeholder="Namba ya simu (+255...)">
+      <input type="password" class="auth-input" id="authPin" placeholder="PIN ya siri (6+)" inputmode="numeric" autocomplete="new-password">
       <p class="auth-error" id="authError"></p>
-      <button class="btn full" id="authSubmit" type="button">Ingia</button>
-      <p class="auth-toggle-link"><a id="authToggle">Huna akaunti? Jisajili</a></p>
+      <button class="btn full" id="authSubmit" type="button">Jisajili</button>
+      <p class="auth-toggle-link"><a id="authToggle">Tayari una akaunti? Ingia</a></p>
       <div class="auth-brand">
         Imetengenezwa na <b>Mr. Buhalata</b><br>
         📞 <a href="tel:+255615269169" style="color:inherit;text-decoration:none;font-weight:700">+255 615 269 169</a>
       </div>
     `;
-    let isSignUp = false;
-    document.getElementById('authToggle').addEventListener('click', () => {
-      isSignUp = !isSignUp;
-      authBox.querySelector('h2').textContent = isSignUp ? 'Tengeneza Akaunti' : 'Karibu Ramani';
-      authBox.querySelector('p.sub').textContent = isSignUp ? 'Jisajili ili kuanza' : 'Ingia au jisajili ili kuanza';
-      document.getElementById('signupFields').style.display = isSignUp ? 'block' : 'none';
-      document.getElementById('authSubmit').textContent = isSignUp ? 'Jisajili' : 'Ingia';
-      document.getElementById('authToggle').textContent = isSignUp ? 'Tayari una akaunti? Ingia' : 'Huna akaunti? Jisajili';
-      document.getElementById('authError').textContent = '';
-    });
-
-    document.getElementById('authSubmit').addEventListener('click', async () => {
-      const email = document.getElementById('authEmail').value.trim();
-      const password = document.getElementById('authPassword').value;
+    document.getElementById('authToggle').addEventListener('click', () => renderAuth('login'));
+    document.getElementById('authSubmit').addEventListener('click', () => {
+      const name = document.getElementById('authName').value.trim();
+      const phone = document.getElementById('authPhone').value.trim();
+      const pin = document.getElementById('authPin').value.trim();
       const errEl = document.getElementById('authError');
-      const btn = document.getElementById('authSubmit');
-      errEl.textContent = ''; btn.disabled = true;
-      try {
-        if (isSignUp) {
-          const name = document.getElementById('authName').value.trim();
-          const phone = document.getElementById('authPhone').value.trim();
-          if (!email || password.length < 6) throw new Error('Barua pepe na neno la siri (6+) zinahitajika');
-          const { error } = await db.auth.signUp({ email, password, options: { data: { full_name: name, phone } } });
-          if (error) throw error;
-          showToast('✅ Akaunti imetengenezwa');
-        } else {
-          const { error } = await db.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-        }
-      } catch (err) {
-        errEl.textContent = err.message;
-      } finally { btn.disabled = false; }
+      errEl.textContent = '';
+      if (!name || name.length < 2) { errEl.textContent = 'Jina linahitajika'; return; }
+      if (!pin || pin.length < 6) { errEl.textContent = 'PIN lazima iwe tarakimu 6+'; return; }
+      if (!/^\d+$/.test(pin)) { errEl.textContent = 'PIN iwe na tarakimu pekee'; return; }
+
+      setProfile({ name, phone, pin, created: Date.now() });
+      showToast('✅ Akaunti imetengenezwa!');
+      setTimeout(() => {
+        if (BIOMETRIC.isSupported()) renderAuth('bio-setup');
+        else enterApp();
+      }, 500);
     });
-  } else if (step === 'bio-setup') {
+  }
+
+  /* ---- LOGIN (kila kufungua) ---- */
+  else if (step === 'login') {
+    authBox.innerHTML = `
+      <div class="auth-logo">💰</div>
+      <h2>Karibu ${esc(profile?.name || 'Tena')}</h2>
+      <p class="sub">Weka PIN yako ili kuendelea</p>
+      <input type="password" class="auth-input" id="authPin" placeholder="PIN yako" inputmode="numeric" autocomplete="current-password" autofocus>
+      <p class="auth-error" id="authError"></p>
+      <button class="btn full" id="authSubmit" type="button">Ingia</button>
+      ${BIOMETRIC.isEnabled() ? `<button class="btn full green" id="bioUnlock" type="button" style="margin-top:8px">👆 Fungua kwa Kidole</button>` : ''}
+      <p class="auth-toggle-link"><a id="authReset">Sahau PIN? (Futa akaunti)</a></p>
+      <div class="auth-brand">
+        Imetengenezwa na <b>Mr. Buhalata</b><br>
+        📞 <a href="tel:+255615269169" style="color:inherit;text-decoration:none;font-weight:700">+255 615 269 169</a>
+      </div>
+    `;
+    const tryLogin = () => {
+      const pin = document.getElementById('authPin').value.trim();
+      const errEl = document.getElementById('authError');
+      if (pin === profile.pin) {
+        enterApp();
+      } else {
+        errEl.textContent = 'PIN si sahihi';
+      }
+    };
+    document.getElementById('authSubmit').addEventListener('click', tryLogin);
+    document.getElementById('authPin').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+    document.getElementById('authReset').addEventListener('click', () => {
+      if (!confirm('Futa akaunti na data yote? Haiwezi kurudishwa.')) return;
+      localStorage.removeItem(PROFILE_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+      BIOMETRIC.disable();
+      DATA = { income: [], expense: [], asset: [], debt: [], goal: [], theme: DATA.theme };
+      renderAuth('signup');
+    });
+    if (document.getElementById('bioUnlock')) {
+      document.getElementById('bioUnlock').addEventListener('click', async () => {
+        try {
+          await BIOMETRIC.verify();
+          enterApp();
+        } catch (err) {
+          document.getElementById('authError').textContent = err.message;
+        }
+      });
+      setTimeout(() => document.getElementById('bioUnlock')?.click(), 400);
+    }
+    setTimeout(() => document.getElementById('authPin')?.focus(), 200);
+  }
+
+  /* ---- BIO SETUP ---- */
+  else if (step === 'bio-setup') {
     authBox.innerHTML = `
       <div class="bio-icon">🔐</div>
       <h2>Wezesha Kuingia kwa Kidole</h2>
@@ -670,7 +657,7 @@ function renderAuth(step = 'login') {
       const btn = document.getElementById('bioEnableBtn');
       errEl.textContent = ''; btn.disabled = true;
       try {
-        await BIOMETRIC.enable(currentUser?.email);
+        await BIOMETRIC.enable(getProfile()?.name);
         showToast('✅ Kidole kimewekwa!');
         setTimeout(() => enterApp(), 800);
       } catch (err) {
@@ -678,44 +665,14 @@ function renderAuth(step = 'login') {
         btn.disabled = false;
       }
     });
-  } else if (step === 'bio-unlock') {
-    authBox.innerHTML = `
-      <div class="bio-icon">👆</div>
-      <h2>Karibu Tena</h2>
-      <p class="sub">Thibitisha kwa <b>kidole au PIN ya kifaa chako</b> ili kuendelea</p>
-      <p class="auth-error" id="bioError"></p>
-      <button class="btn full green" id="bioUnlockBtn" type="button">🔓 Fungua</button>
-      <button class="btn full ghost" id="bioSwitchUser" type="button" style="margin-top:8px;color:var(--text-muted);border-color:var(--border)">Badilisha akaunti</button>
-      <div class="auth-brand">
-        Imetengenezwa na <b>Mr. Buhalata</b><br>📞 +255 615 269 169
-      </div>
-    `;
-    document.getElementById('bioSwitchUser').addEventListener('click', async () => {
-      BIOMETRIC.disable();
-      await db.auth.signOut();
-      renderAuth('login');
-    });
-    document.getElementById('bioUnlockBtn').addEventListener('click', async () => {
-      const errEl = document.getElementById('bioError');
-      const btn = document.getElementById('bioUnlockBtn');
-      errEl.textContent = ''; btn.disabled = true;
-      try {
-        await BIOMETRIC.verify();
-        bioUnlocked = true;
-        enterApp();
-      } catch (err) {
-        errEl.textContent = err.message;
-        btn.disabled = false;
-      }
-    });
-    setTimeout(() => { document.getElementById('bioUnlockBtn')?.click(); }, 400);
   }
 }
 
 /* ============================================================
-   13. APP FLOW
+   APP FLOW
    ============================================================ */
 function enterApp() {
+  currentUser = getProfile();
   authScreen.classList.add('hidden');
   document.getElementById('appRoot').style.display = 'block';
   applyTheme();
@@ -723,137 +680,103 @@ function enterApp() {
   renderHistory();
 }
 
-async function showAuthFlow() {
-  try {
-    const { data: { session } } = await db.auth.getSession();
-    const s = session;
-
-    if (s?.user && bioUnlocked) {
-      currentUser = s.user;
-      enterApp();
-      return;
-    }
-
-    if (s?.user && BIOMETRIC.isEnabled() && BIOMETRIC.getCred()?.email === s.user.email) {
-      currentUser = s.user;
-      authScreen.classList.remove('hidden');
-      document.getElementById('appRoot').style.display = 'none';
-      renderAuth('bio-unlock');
-      return;
-    }
-
-    if (s?.user) {
-      // Session ipo lakini biometric haipo → pakua data na ingia moja kwa moja
-      currentUser = s.user;
-      await loadAll();
-      bioUnlocked = true;
-      enterApp();
-      return;
-    }
-
+function showAuthFlow() {
+  const profile = getProfile();
+  if (!profile) {
+    authScreen.classList.remove('hidden');
+    document.getElementById('appRoot').style.display = 'none';
+    renderAuth('signup');
+  } else {
     authScreen.classList.remove('hidden');
     document.getElementById('appRoot').style.display = 'none';
     renderAuth('login');
-  } catch (err) {
-    console.error('showAuthFlow error:', err);
-    showAuthMessage('⚠️', 'Tatizo la kuanzisha', err.message || 'Angalia internet kisha refresh');
   }
 }
 
-db.auth.onAuthStateChange(async (event, session) => {
-  console.log('[Auth]', event);
-  if (event === 'SIGNED_IN' && session?.user) {
-    currentUser = session.user;
-    try {
-      await loadAll();
-      if (!BIOMETRIC.isEnabled() && BIOMETRIC.isSupported()) {
-        authScreen.classList.remove('hidden');
-        document.getElementById('appRoot').style.display = 'none';
-        renderAuth('bio-setup');
-      } else {
-        bioUnlocked = true;
-        enterApp();
-      }
-    } catch (err) {
-      console.error(err);
-      showToast('❌ Tatizo la kupakua data: ' + err.message);
-    }
-  } else if (event === 'SIGNED_OUT') {
-    currentUser = null;
-    bioUnlocked = false;
-    DATA = { income: [], expense: [], asset: [], debt: [], goal: [], theme: DATA.theme };
-    renderAuth('login');
-  }
-});
-
-document.getElementById('signOutBtn').addEventListener('click', async () => {
+document.getElementById('signOutBtn').addEventListener('click', () => {
   if (!confirm('Una uhakika unataka kutoka?')) return;
-  await db.auth.signOut();
+  showAuthFlow();
 });
 
 document.getElementById('lockNowBtn').addEventListener('click', () => {
-  bioUnlocked = false;
   showAuthFlow();
 });
 
 /* ============================================================
-   14. FORMS
+   FORMS
    ============================================================ */
 document.getElementById('incomeDate').value = todayStr();
 document.getElementById('expenseDate').value = todayStr();
 
-document.getElementById('formIncome').addEventListener('submit', async (e) => {
+document.getElementById('formIncome').addEventListener('submit', (e) => {
   e.preventDefault();
-  try {
-    const rec = await dbAdd('income', { source: document.getElementById('incomeSource').value.trim(), amount: Number(document.getElementById('incomeAmount').value), date: document.getElementById('incomeDate').value });
-    DATA.income.unshift(rec);
-    e.target.reset();
-    document.getElementById('incomeDate').value = todayStr();
-    renderDashboard(); showToast('✅ Kipato kimeongezwa');
-  } catch (err) { showToast('❌ ' + err.message); }
-});
-document.getElementById('formExpense').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  try {
-    const rec = await dbAdd('expense', { category: document.getElementById('expenseCategory').value, amount: Number(document.getElementById('expenseAmount').value), date: document.getElementById('expenseDate').value });
-    DATA.expense.unshift(rec);
-    e.target.reset();
-    document.getElementById('expenseDate').value = todayStr();
-    renderDashboard(); showToast('✅ Matumizi yameongezwa');
-  } catch (err) { showToast('❌ ' + err.message); }
-});
-document.getElementById('formAsset').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  try {
-    const rec = await dbAdd('asset', { name: document.getElementById('assetName').value.trim(), value: Number(document.getElementById('assetValue').value), date: todayStr() });
-    DATA.asset.unshift(rec);
-    e.target.reset(); renderDashboard(); showToast('✅ Mali imeongezwa');
-  } catch (err) { showToast('❌ ' + err.message); }
-});
-document.getElementById('formDebt').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  try {
-    const rec = await dbAdd('debt', { name: document.getElementById('debtName').value.trim(), amount: Number(document.getElementById('debtAmount').value), interest_rate: 0, date: todayStr() });
-    DATA.debt.unshift(rec);
-    e.target.reset(); renderDashboard(); showToast('✅ Deni limeongezwa');
-  } catch (err) { showToast('❌ ' + err.message); }
-});
-document.getElementById('formGoal').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  try {
-    const rec = await dbAdd('goal', { text: document.getElementById('goalText').value.trim(), date: todayStr() });
-    DATA.goal.unshift(rec);
-    e.target.reset(); showToast('✅ Lengo limewekwa');
-  } catch (err) { showToast('❌ ' + err.message); }
+  DATA.income.unshift({
+    id: uid(),
+    source: document.getElementById('incomeSource').value.trim(),
+    amount: Number(document.getElementById('incomeAmount').value),
+    date: document.getElementById('incomeDate').value
+  });
+  saveData();
+  e.target.reset();
+  document.getElementById('incomeDate').value = todayStr();
+  renderDashboard(); showToast('✅ Kipato kimeongezwa');
 });
 
-document.getElementById('resetAllBtn').addEventListener('click', async () => {
+document.getElementById('formExpense').addEventListener('submit', (e) => {
+  e.preventDefault();
+  DATA.expense.unshift({
+    id: uid(),
+    category: document.getElementById('expenseCategory').value,
+    amount: Number(document.getElementById('expenseAmount').value),
+    date: document.getElementById('expenseDate').value
+  });
+  saveData();
+  e.target.reset();
+  document.getElementById('expenseDate').value = todayStr();
+  renderDashboard(); showToast('✅ Matumizi yameongezwa');
+});
+
+document.getElementById('formAsset').addEventListener('submit', (e) => {
+  e.preventDefault();
+  DATA.asset.unshift({
+    id: uid(),
+    name: document.getElementById('assetName').value.trim(),
+    value: Number(document.getElementById('assetValue').value),
+    date: todayStr()
+  });
+  saveData();
+  e.target.reset(); renderDashboard(); showToast('✅ Mali imeongezwa');
+});
+
+document.getElementById('formDebt').addEventListener('submit', (e) => {
+  e.preventDefault();
+  DATA.debt.unshift({
+    id: uid(),
+    name: document.getElementById('debtName').value.trim(),
+    amount: Number(document.getElementById('debtAmount').value),
+    date: todayStr()
+  });
+  saveData();
+  e.target.reset(); renderDashboard(); showToast('✅ Deni limeongezwa');
+});
+
+document.getElementById('formGoal').addEventListener('submit', (e) => {
+  e.preventDefault();
+  DATA.goal.unshift({
+    id: uid(),
+    text: document.getElementById('goalText').value.trim(),
+    date: todayStr()
+  });
+  saveData();
+  e.target.reset(); showToast('✅ Lengo limewekwa');
+});
+
+document.getElementById('resetAllBtn').addEventListener('click', () => {
   if (!confirm('Futa rekodi ZOTE? Haiwezi kurudishwa.')) return;
-  try {
-    await dbClearAll();
-    DATA = { income: [], expense: [], asset: [], debt: [], goal: [], theme: DATA.theme };
-    renderDashboard(); renderHistory(); showToast('🗑 Zote zimefutwa');
-  } catch (err) { showToast('❌ ' + err.message); }
+  DATA = { income: [], expense: [], asset: [], debt: [], goal: [], theme: DATA.theme };
+  saveData();
+  renderDashboard(); renderHistory();
+  showToast('🗑 Zote zimefutwa');
 });
 
 document.querySelectorAll('.filter-pills button').forEach(b => {
@@ -865,17 +788,11 @@ document.querySelectorAll('.filter-pills button').forEach(b => {
 });
 
 /* ============================================================
-   15. INIT
+   INIT
    ============================================================ */
-(async () => {
-  try {
-    applyTheme();
-    await showAuthFlow();
-  } catch (err) {
-    console.error('INIT error:', err);
-    showAuthMessage('⚠️', 'Tatizo la kuanzisha', err.message || 'Refresh ukurasa');
-  }
-})();
+loadData();
+applyTheme();
+showAuthFlow();
 </script>
 </body>
-      </html>
+                                                                    </html>
